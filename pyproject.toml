@@ -312,6 +312,10 @@ external = ["RUF027"]
     "S101",
     "SLF001",
     "BLE001",  # allow broad-exception catching in tests
+    "ARG002",  # unused method arguments (pytest fixtures)
+    "E712",    # comparison to True/False (acceptable in assertions)
+    "PT018",   # assertion should be broken down (complex assertions are fine in tests)
+    "F841",    # unused variable (test setup variables)
 ]
 
 [tool.ruff.lint.flake8-builtins]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from loguru import logger
 from sqlalchemy.orm import selectinload
@@ -32,8 +33,6 @@ from langbuilder.services.rbac.exceptions import (
 )
 
 if TYPE_CHECKING:
-    from uuid import UUID
-
     from sqlmodel.ext.asyncio.session import AsyncSession
 
 
@@ -44,10 +43,10 @@ class RBACService(Service):
 
     async def can_access(
         self,
-        user_id: UUID,
+        user_id: UUID | str,
         permission_name: str,
         scope_type: str,
-        scope_id: UUID | None,
+        scope_id: UUID | str | None,
         db: AsyncSession,
     ) -> bool:
         """Core authorization check. Returns True if user has permission.
@@ -63,15 +62,21 @@ class RBACService(Service):
         5. Check if role has the required permission
 
         Args:
-            user_id: The user's ID
+            user_id: The user's ID (UUID or string)
             permission_name: Permission name (e.g., "Create", "Read", "Update", "Delete")
             scope_type: Scope type (e.g., "Flow", "Project", "Global")
-            scope_id: Specific resource ID (None for Global scope)
+            scope_id: Specific resource ID (None for Global scope, UUID or string)
             db: Database session
 
         Returns:
             bool: True if user has permission, False otherwise
         """
+        # Convert string UUIDs to UUID objects
+        if isinstance(user_id, str):
+            user_id = UUID(user_id)
+        if isinstance(scope_id, str):
+            scope_id = UUID(scope_id)
+
         # 1. Superuser bypass
         user = await get_user_by_id(db, user_id)
         if user and user.is_superuser:
@@ -405,18 +410,22 @@ class RBACService(Service):
 
     async def list_user_assignments(
         self,
-        user_id: UUID | None,
+        user_id: UUID | str | None,
         db: AsyncSession,
     ) -> list[UserRoleAssignment]:
         """List all role assignments with role relationship loaded, optionally filtered by user.
 
         Args:
-            user_id: Optional user ID to filter assignments
+            user_id: Optional user ID to filter assignments (UUID or string)
             db: Database session
 
         Returns:
             list[UserRoleAssignment]: List of role assignments with role relationship loaded
         """
+        # Convert string UUID to UUID object
+        if isinstance(user_id, str):
+            user_id = UUID(user_id)
+
         if user_id:
             stmt = (
                 select(UserRoleAssignment)
@@ -431,22 +440,28 @@ class RBACService(Service):
 
     async def get_user_permissions_for_scope(
         self,
-        user_id: UUID,
+        user_id: UUID | str,
         scope_type: str,
-        scope_id: UUID | None,
+        scope_id: UUID | str | None,
         db: AsyncSession,
     ) -> list[Permission]:
         """Get all permissions a user has for a specific scope.
 
         Args:
-            user_id: The user's ID
+            user_id: The user's ID (UUID or string)
             scope_type: Scope type (e.g., "Flow", "Project", "Global")
-            scope_id: Specific resource ID (None for Global scope)
+            scope_id: Specific resource ID (None for Global scope, UUID or string)
             db: Database session
 
         Returns:
             list[Permission]: List of permissions user has for the scope
         """
+        # Convert string UUIDs to UUID objects
+        if isinstance(user_id, str):
+            user_id = UUID(user_id)
+        if isinstance(scope_id, str):
+            scope_id = UUID(scope_id)
+
         role = await self._get_user_role_for_scope(user_id, scope_type, scope_id, db)
 
         if not role:
