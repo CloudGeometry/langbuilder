@@ -4,6 +4,7 @@ This module provides comprehensive tests for the Alembic migration that creates
 and updates RBAC tables. Tests verify upgrade, downgrade, schema correctness,
 indexes, foreign keys, and unique constraints.
 """
+
 import pytest
 from sqlalchemy import text
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -12,9 +13,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 @pytest.mark.asyncio
 async def test_rbac_tables_exist(async_session: AsyncSession):
     """Test that all RBAC tables exist after migration."""
-    result = await async_session.execute(
-        text("SELECT name FROM sqlite_master WHERE type='table'")
-    )
+    result = await async_session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
     tables = [row[0] for row in result.fetchall()]
 
     assert "role" in tables, "Role table missing"
@@ -94,9 +93,7 @@ async def test_rbac_standard_indexes_exist(async_session: AsyncSession):
 async def test_rbac_foreign_keys_exist(async_session: AsyncSession):
     """Test that foreign key constraints are properly defined."""
     # Check rolepermission foreign keys
-    result = await async_session.execute(
-        text("PRAGMA foreign_key_list(rolepermission)")
-    )
+    result = await async_session.execute(text("PRAGMA foreign_key_list(rolepermission)"))
     fks = result.fetchall()
     assert len(fks) == 2, f"RolePermission should have 2 foreign keys, found {len(fks)}"
 
@@ -106,9 +103,7 @@ async def test_rbac_foreign_keys_exist(async_session: AsyncSession):
     assert "permission" in fk_tables, "RolePermission missing FK to permission table"
 
     # Check userroleassignment foreign keys
-    result = await async_session.execute(
-        text("PRAGMA foreign_key_list(userroleassignment)")
-    )
+    result = await async_session.execute(text("PRAGMA foreign_key_list(userroleassignment)"))
     fks = result.fetchall()
     assert len(fks) == 3, f"UserRoleAssignment should have 3 foreign keys, found {len(fks)}"
 
@@ -130,7 +125,9 @@ async def test_rbac_unique_constraints_exist(async_session: AsyncSession):
     # Unique constraint name varies between SQLModel and Alembic
     # Both should have role_id + permission_id uniqueness
     schema_lower = schema.lower()
-    has_unique_constraint = "unique_role_permission" in schema_lower or ("unique" in schema_lower and "role_id" in schema_lower and "permission_id" in schema_lower)
+    has_unique_constraint = "unique_role_permission" in schema_lower or (
+        "unique" in schema_lower and "role_id" in schema_lower and "permission_id" in schema_lower
+    )
     assert has_unique_constraint, f"unique_role_permission constraint missing. Schema: {schema}"
 
     # Check userroleassignment unique constraint
@@ -141,17 +138,22 @@ async def test_rbac_unique_constraints_exist(async_session: AsyncSession):
     assert schema is not None, "UserRoleAssignment table schema not found"
     # Unique constraint name varies between SQLModel and Alembic
     schema_lower = schema.lower()
-    has_unique_constraint = "unique_user_role_scope" in schema_lower or ("unique" in schema_lower and "user_id" in schema_lower and "role_id" in schema_lower and "scope_type" in schema_lower)
+    has_unique_constraint = "unique_user_role_scope" in schema_lower or (
+        "unique" in schema_lower
+        and "user_id" in schema_lower
+        and "role_id" in schema_lower
+        and "scope_type" in schema_lower
+    )
     assert has_unique_constraint, f"unique_user_role_scope constraint missing. Schema: {schema}"
 
     # Check permission unique constraint (name, scope)
-    result = await async_session.execute(
-        text("SELECT sql FROM sqlite_master WHERE type='table' AND name='permission'")
-    )
+    result = await async_session.execute(text("SELECT sql FROM sqlite_master WHERE type='table' AND name='permission'"))
     schema = result.scalar()
     assert schema is not None, "Permission table schema not found"
     schema_lower = schema.lower()
-    has_unique_constraint = "unique_permission_scope" in schema_lower or ("unique" in schema_lower and "name" in schema_lower and "scope" in schema_lower)
+    has_unique_constraint = "unique_permission_scope" in schema_lower or (
+        "unique" in schema_lower and "name" in schema_lower and "scope" in schema_lower
+    )
     assert has_unique_constraint, f"unique_permission_scope constraint missing. Schema: {schema}"
 
     # Check role unique constraint (name)
@@ -175,9 +177,7 @@ async def test_rbac_unique_constraints_exist(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_permission_table_schema(async_session: AsyncSession):
     """Test that permission table has correct schema after migration."""
-    result = await async_session.execute(
-        text("PRAGMA table_info(permission)")
-    )
+    result = await async_session.execute(text("PRAGMA table_info(permission)"))
     columns = {row[1]: row[2] for row in result.fetchall()}
 
     # Check required columns exist
@@ -194,9 +194,7 @@ async def test_permission_table_schema(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_role_table_schema(async_session: AsyncSession):
     """Test that role table has correct schema after migration."""
-    result = await async_session.execute(
-        text("PRAGMA table_info(role)")
-    )
+    result = await async_session.execute(text("PRAGMA table_info(role)"))
     columns = {row[1]: row[2] for row in result.fetchall()}
 
     # Check required columns exist
@@ -214,9 +212,7 @@ async def test_role_table_schema(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_rolepermission_table_schema(async_session: AsyncSession):
     """Test that rolepermission table has correct schema."""
-    result = await async_session.execute(
-        text("PRAGMA table_info(rolepermission)")
-    )
+    result = await async_session.execute(text("PRAGMA table_info(rolepermission)"))
     columns = {row[1]: row[2] for row in result.fetchall()}
 
     # Check required columns exist
@@ -229,9 +225,7 @@ async def test_rolepermission_table_schema(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_userroleassignment_table_schema(async_session: AsyncSession):
     """Test that userroleassignment table has correct schema."""
-    result = await async_session.execute(
-        text("PRAGMA table_info(userroleassignment)")
-    )
+    result = await async_session.execute(text("PRAGMA table_info(userroleassignment)"))
     columns = {row[1]: row[2] for row in result.fetchall()}
 
     # Check required columns exist
@@ -248,9 +242,7 @@ async def test_userroleassignment_table_schema(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_old_tables_removed(async_session: AsyncSession):
     """Test that old RBAC tables are removed after migration."""
-    result = await async_session.execute(
-        text("SELECT name FROM sqlite_master WHERE type='table'")
-    )
+    result = await async_session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
     tables = [row[0] for row in result.fetchall()]
 
     # Old tables should not exist
@@ -267,31 +259,23 @@ async def test_migration_data_preservation(async_session: AsyncSession):
     renames columns, we verify the data can be queried correctly.
     """
     # Check if any roles exist
-    result = await async_session.execute(
-        text("SELECT COUNT(*) FROM role")
-    )
+    result = await async_session.execute(text("SELECT COUNT(*) FROM role"))
     role_count = result.scalar()
 
     # If roles exist, verify they have correct schema
     if role_count > 0:
-        result = await async_session.execute(
-            text("SELECT id, name, is_system_role, created_at FROM role LIMIT 1")
-        )
+        result = await async_session.execute(text("SELECT id, name, is_system_role, created_at FROM role LIMIT 1"))
         row = result.fetchone()
         assert row is not None, "Role data should be queryable"
         assert len(row) == 4, "Role should have 4 columns"
 
     # Check if any permissions exist
-    result = await async_session.execute(
-        text("SELECT COUNT(*) FROM permission")
-    )
+    result = await async_session.execute(text("SELECT COUNT(*) FROM permission"))
     permission_count = result.scalar()
 
     # If permissions exist, verify they have correct schema
     if permission_count > 0:
-        result = await async_session.execute(
-            text("SELECT id, name, scope, created_at FROM permission LIMIT 1")
-        )
+        result = await async_session.execute(text("SELECT id, name, scope, created_at FROM permission LIMIT 1"))
         row = result.fetchone()
         assert row is not None, "Permission data should be queryable"
         assert len(row) == 4, "Permission should have 4 columns"
@@ -406,9 +390,7 @@ async def test_migration_idempotency_verification(async_session: AsyncSession):
     performance indexes won't exist. This test adapts to both scenarios.
     """
     # Get all tables
-    result = await async_session.execute(
-        text("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-    )
+    result = await async_session.execute(text("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"))
     tables = [row[0] for row in result.fetchall()]
 
     # Verify RBAC tables exist
@@ -417,9 +399,7 @@ async def test_migration_idempotency_verification(async_session: AsyncSession):
         assert table in tables, f"Required table {table} missing"
 
     # Get all indexes
-    result = await async_session.execute(
-        text("SELECT name FROM sqlite_master WHERE type='index' ORDER BY name")
-    )
+    result = await async_session.execute(text("SELECT name FROM sqlite_master WHERE type='index' ORDER BY name"))
     indexes = [row[0] for row in result.fetchall()]
 
     # Check if performance indexes exist (only in migrated databases)
@@ -428,7 +408,7 @@ async def test_migration_idempotency_verification(async_session: AsyncSession):
         "idx_user_role_assignment_user",
         "idx_user_role_assignment_scope",
         "idx_role_permission_lookup",
-        "idx_permission_name_scope"
+        "idx_permission_name_scope",
     ]
 
     has_any_performance_index = any(idx in indexes for idx in performance_indexes)

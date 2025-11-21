@@ -777,4 +777,4 @@ async def test_read_folder_with_component_filter(client: AsyncClient, json_flow:
     folder_data = response.json()
     assert len(folder_data["flows"]["items"]) == 1
     assert folder_data["flows"]["items"][0]["name"] == component_flow_name
-    assert folder_data["flows"]["items"][0]["is_component"] == True  # noqa: E712
+    assert folder_data["flows"]["items"][0]["is_component"] == True

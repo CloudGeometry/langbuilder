@@ -67,7 +67,7 @@ class TestListAssignments:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test listing all assignments as a superuser."""
@@ -108,9 +108,9 @@ class TestListAssignments:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
     ):
         """Test filtering assignments by user_id."""
         # Create assignment via API
@@ -138,7 +138,7 @@ class TestListAssignments:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test filtering assignments by role_name."""
@@ -165,7 +165,7 @@ class TestListAssignments:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test filtering assignments by scope_type."""
@@ -203,7 +203,7 @@ class TestCreateAssignment:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test creating a global scope assignment."""
@@ -230,7 +230,7 @@ class TestCreateAssignment:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
         default_folder: Folder,
     ):
@@ -257,7 +257,7 @@ class TestCreateAssignment:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test creating a duplicate assignment should fail."""
@@ -300,7 +300,7 @@ class TestCreateAssignment:
         self,
         client: AsyncClient,
         logged_in_headers,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test creating assignment as regular user should fail."""
@@ -324,7 +324,7 @@ class TestUpdateAssignment:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test updating an assignment's role."""
@@ -357,9 +357,9 @@ class TestUpdateAssignment:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
     ):
         """Test updating an immutable assignment should fail."""
         # Create assignment via API
@@ -412,7 +412,7 @@ class TestUpdateAssignment:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test updating to an invalid role should fail."""
@@ -440,9 +440,9 @@ class TestUpdateAssignment:
         client: AsyncClient,
         logged_in_headers,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
     ):
         """Test updating assignment as regular user should fail."""
         # Create assignment via API (needs super user)
@@ -501,7 +501,7 @@ class TestDeleteAssignment:
         self,
         client: AsyncClient,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
     ):
         """Test deleting an immutable assignment should fail."""
@@ -548,9 +548,9 @@ class TestDeleteAssignment:
         client: AsyncClient,
         logged_in_headers,
         logged_in_headers_super_user,
-        session: AsyncSession,  # noqa: ARG002
+        session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
     ):
         """Test deleting assignment as regular user should fail."""
         # Create assignment via API (needs super user)
@@ -603,7 +603,7 @@ class TestCheckPermission:
         logged_in_headers_super_user,
         session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
     ):
         """Test that users with appropriate role are granted permission."""
         # Assign Global Admin role to user via API
@@ -636,7 +636,7 @@ class TestCheckPermission:
         logged_in_headers_super_user,
         session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
         default_folder: Folder,
     ):
         """Test permission check with specific scope_id."""
@@ -682,7 +682,7 @@ class TestCheckPermissionsBatch:
         logged_in_headers_super_user,
         session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
         default_folder: Folder,
     ):
         """Test batch permission check with multiple permissions."""
@@ -851,7 +851,7 @@ class TestCheckPermissionsBatch:
         logged_in_headers_super_user,
         session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
         default_folder: Folder,
     ):
         """Test batch check with different resource types and scopes."""
@@ -938,7 +938,7 @@ class TestCheckPermissionsBatch:
         logged_in_headers_super_user,
         session: AsyncSession,
         active_user: UserRead,
-        super_user: UserRead,  # noqa: ARG002
+        super_user: UserRead,
         default_folder: Folder,
     ):
         """Test batch check for user with Viewer role (read-only)."""

@@ -64,7 +64,7 @@ class FakeSession:  # Minimal async session stub
     async def commit(self):
         return
 
-    async def refresh(self, obj):  # noqa: ARG002
+    async def refresh(self, obj):
         return
 
     async def delete(self, obj):

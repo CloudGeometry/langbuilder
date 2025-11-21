@@ -66,7 +66,7 @@ class MockLanguageModel(BaseLanguageModel, BaseModel):
     async def apredict_messages(self, *args, **kwargs):
         raise NotImplementedError
 
-    def bind_tools(self, tools, tool_choice=None):  # noqa: ARG002
+    def bind_tools(self, tools, tool_choice=None):
         """Bind tools to the model for testing."""
         self.tools = tools
         return self

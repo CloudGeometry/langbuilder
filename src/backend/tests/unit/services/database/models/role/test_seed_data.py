@@ -312,6 +312,6 @@ async def test_seed_rbac_data_role_permission_relationships(async_session: Async
         actual_perms = {(rp.permission.name, rp.permission.scope) for rp in role.role_permissions}
         expected_perms = set(perm_list)
 
-        assert (
-            actual_perms == expected_perms
-        ), f"Role {role_name} should have exact permission set: expected {expected_perms}, got {actual_perms}"
+        assert actual_perms == expected_perms, (
+            f"Role {role_name} should have exact permission set: expected {expected_perms}, got {actual_perms}"
+        )

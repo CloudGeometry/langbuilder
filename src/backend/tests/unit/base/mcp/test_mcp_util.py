@@ -345,7 +345,7 @@ class TestMCPUtilityFunctions:
             def __init__(self, flows: list[DummyFlow]):
                 self._flows = flows
 
-            async def exec(self, stmt):  # noqa: ARG002
+            async def exec(self, stmt):
                 return DummyExec(self._flows)
 
         user_id = "123e4567-e89b-12d3-a456-426614174000"

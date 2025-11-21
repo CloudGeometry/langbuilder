@@ -3,6 +3,7 @@
 This module tests the Alembic data migration that assigns Owner roles to
 existing users for their Projects and Flows.
 """
+
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -50,7 +51,7 @@ async def execute_upgrade_migration(session: AsyncSession, owner_role_id):
             UserRoleAssignment.user_id == project.user_id,
             UserRoleAssignment.role_id == owner_role_id,
             UserRoleAssignment.scope_type == "Project",
-            UserRoleAssignment.scope_id == project.id
+            UserRoleAssignment.scope_id == project.id,
         )
         check_result = await session.exec(check_stmt)
         existing = check_result.first()
@@ -64,7 +65,7 @@ async def execute_upgrade_migration(session: AsyncSession, owner_role_id):
                 scope_id=project.id,
                 is_immutable=project.is_starter_project,
                 created_at=datetime.now(timezone.utc),
-                created_by=None
+                created_by=None,
             )
             session.add(assignment)
 
@@ -81,7 +82,7 @@ async def execute_upgrade_migration(session: AsyncSession, owner_role_id):
             UserRoleAssignment.user_id == flow.user_id,
             UserRoleAssignment.role_id == owner_role_id,
             UserRoleAssignment.scope_type == "Flow",
-            UserRoleAssignment.scope_id == flow.id
+            UserRoleAssignment.scope_id == flow.id,
         )
         check_result = await session.exec(check_stmt)
         existing = check_result.first()
@@ -95,7 +96,7 @@ async def execute_upgrade_migration(session: AsyncSession, owner_role_id):
                 scope_id=flow.id,
                 is_immutable=False,
                 created_at=datetime.now(timezone.utc),
-                created_by=None
+                created_by=None,
             )
             session.add(assignment)
 
@@ -108,7 +109,7 @@ async def execute_downgrade_migration(session: AsyncSession, owner_role_id):
     stmt_project_assignments = select(UserRoleAssignment).where(
         UserRoleAssignment.role_id == owner_role_id,
         UserRoleAssignment.scope_type == "Project",
-        UserRoleAssignment.created_by.is_(None)
+        UserRoleAssignment.created_by.is_(None),
     )
     result = await session.exec(stmt_project_assignments)
     project_assignments = result.all()
@@ -119,7 +120,7 @@ async def execute_downgrade_migration(session: AsyncSession, owner_role_id):
     stmt_flow_assignments = select(UserRoleAssignment).where(
         UserRoleAssignment.role_id == owner_role_id,
         UserRoleAssignment.scope_type == "Flow",
-        UserRoleAssignment.created_by.is_(None)
+        UserRoleAssignment.created_by.is_(None),
     )
     result = await session.exec(stmt_flow_assignments)
     flow_assignments = result.all()
@@ -184,8 +185,7 @@ async def test_migration_creates_owner_assignments_for_projects(db_with_rbac: As
 
     # Verify role assignments were created
     stmt = select(UserRoleAssignment).where(
-        UserRoleAssignment.scope_type == "Project",
-        UserRoleAssignment.role_id == owner_role_id
+        UserRoleAssignment.scope_type == "Project", UserRoleAssignment.role_id == owner_role_id
     )
     result = await db_with_rbac.exec(stmt)
     assignments = result.all()
@@ -223,8 +223,7 @@ async def test_migration_creates_owner_assignments_for_standalone_flows(db_with_
 
     # Verify role assignments were created
     stmt = select(UserRoleAssignment).where(
-        UserRoleAssignment.scope_type == "Flow",
-        UserRoleAssignment.role_id == owner_role_id
+        UserRoleAssignment.scope_type == "Flow", UserRoleAssignment.role_id == owner_role_id
     )
     result = await db_with_rbac.exec(stmt)
     assignments = result.all()
@@ -268,8 +267,7 @@ async def test_migration_does_not_assign_for_flows_in_projects(db_with_rbac: Asy
 
     # Verify NO Flow-level assignment for this flow
     stmt = select(UserRoleAssignment).where(
-        UserRoleAssignment.scope_type == "Flow",
-        UserRoleAssignment.scope_id == flow_in_project.id
+        UserRoleAssignment.scope_type == "Flow", UserRoleAssignment.scope_id == flow_in_project.id
     )
     result = await db_with_rbac.exec(stmt)
     flow_assignments = result.all()
@@ -278,8 +276,7 @@ async def test_migration_does_not_assign_for_flows_in_projects(db_with_rbac: Asy
 
     # But Project-level assignment should exist
     stmt = select(UserRoleAssignment).where(
-        UserRoleAssignment.scope_type == "Project",
-        UserRoleAssignment.scope_id == project.id
+        UserRoleAssignment.scope_type == "Project", UserRoleAssignment.scope_id == project.id
     )
     result = await db_with_rbac.exec(stmt)
     project_assignments = result.all()
@@ -328,9 +325,7 @@ async def test_migration_skips_resources_without_users(db_with_rbac: AsyncSessio
     await db_with_rbac.commit()
 
     # Verify no assignments were created
-    stmt = select(UserRoleAssignment).where(
-        UserRoleAssignment.scope_id.in_([project_no_user.id, flow_no_user.id])
-    )
+    stmt = select(UserRoleAssignment).where(UserRoleAssignment.scope_id.in_([project_no_user.id, flow_no_user.id]))
     result = await db_with_rbac.exec(stmt)
     assignments = result.all()
 

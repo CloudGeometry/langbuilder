@@ -81,8 +81,8 @@ async def test_update_component_build_config_sync():
         def update_build_config(
             self,
             build_config: dotdict,
-            field_value: Any,  # noqa: ARG002
-            field_name: str | None = None,  # noqa: ARG002
+            field_value: Any,
+            field_name: str | None = None,
         ):
             build_config["foo"] = "bar"
             return build_config
@@ -98,8 +98,8 @@ async def test_update_component_build_config_async():
         async def update_build_config(
             self,
             build_config: dotdict,
-            field_value: Any,  # noqa: ARG002
-            field_name: str | None = None,  # noqa: ARG002
+            field_value: Any,
+            field_name: str | None = None,
         ):
             build_config["foo"] = "bar"
             return build_config
@@ -112,7 +112,7 @@ async def test_update_component_build_config_async():
 
 @pytest.mark.usefixtures("use_noop_session")
 @pytest.mark.asyncio
-async def test_send_message_without_database(monkeypatch):  # noqa: ARG001
+async def test_send_message_without_database(monkeypatch):
     component = Component()
     event_manager = MagicMock()
     component._event_manager = event_manager
@@ -134,7 +134,7 @@ async def test_send_message_without_database(monkeypatch):  # noqa: ARG001
 
 @pytest.mark.usefixtures("use_noop_session")
 @pytest.mark.asyncio
-async def test_agent_component_send_message_events(monkeypatch):  # noqa: ARG001
+async def test_agent_component_send_message_events(monkeypatch):
     from langbuilder.components.agents.agent import AgentComponent
 
     event_manager = MagicMock()

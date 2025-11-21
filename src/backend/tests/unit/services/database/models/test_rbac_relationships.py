@@ -132,9 +132,7 @@ async def test_user_to_roles_relationship(async_session: AsyncSession, test_user
     role_2 = await create_role(async_session, role_2_data)
 
     # Assign roles to user with different scopes
-    assignment_1 = UserRoleAssignmentCreate(
-        user_id=test_user.id, role_id=role_1.id, scope_type="Global", scope_id=None
-    )
+    assignment_1 = UserRoleAssignmentCreate(user_id=test_user.id, role_id=role_1.id, scope_type="Global", scope_id=None)
     await create_user_role_assignment(async_session, assignment_1)
 
     assignment_2 = UserRoleAssignmentCreate(user_id=test_user.id, role_id=role_2.id, scope_type="Flow", scope_id=None)
@@ -160,9 +158,7 @@ async def test_role_to_user_assignments_relationship(async_session: AsyncSession
     role = await create_role(async_session, role_data)
 
     # Create multiple user assignments for the role
-    assignment_1 = UserRoleAssignmentCreate(
-        user_id=test_user.id, role_id=role.id, scope_type="Global", scope_id=None
-    )
+    assignment_1 = UserRoleAssignmentCreate(user_id=test_user.id, role_id=role.id, scope_type="Global", scope_id=None)
     await create_user_role_assignment(async_session, assignment_1)
 
     # Query role and access user assignments through relationship with eager loading
@@ -342,9 +338,7 @@ async def test_role_with_multiple_permissions_and_users(async_session: AsyncSess
     await async_session.refresh(user2)
 
     # Assign role to multiple users
-    assignment_1 = UserRoleAssignmentCreate(
-        user_id=test_user.id, role_id=role.id, scope_type="Project", scope_id=None
-    )
+    assignment_1 = UserRoleAssignmentCreate(user_id=test_user.id, role_id=role.id, scope_type="Project", scope_id=None)
     await create_user_role_assignment(async_session, assignment_1)
 
     assignment_2 = UserRoleAssignmentCreate(user_id=user2.id, role_id=role.id, scope_type="Project", scope_id=None)
@@ -420,8 +414,6 @@ async def test_user_with_multiple_roles_different_scopes(async_session: AsyncSes
 
     flow_assignment = next(a for a in assignments if a.scope_type == "Flow")
     assert flow_assignment.scope_id == flow_id
-
-
 
 
 @pytest.mark.asyncio

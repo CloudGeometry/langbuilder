@@ -131,12 +131,8 @@ async def test_flow_role_assignments_with_assignments(async_session: AsyncSessio
 async def test_flow_role_assignments_filtered_by_scope(async_session: AsyncSession, test_user: User):
     """Test that Flow only shows assignments for its specific scope (not other flows or projects)."""
     # Create two flows
-    flow1 = Flow(
-        name="Flow 1", description="First flow", data={"nodes": [], "edges": []}, user_id=test_user.id
-    )
-    flow2 = Flow(
-        name="Flow 2", description="Second flow", data={"nodes": [], "edges": []}, user_id=test_user.id
-    )
+    flow1 = Flow(name="Flow 1", description="First flow", data={"nodes": [], "edges": []}, user_id=test_user.id)
+    flow2 = Flow(name="Flow 2", description="Second flow", data={"nodes": [], "edges": []}, user_id=test_user.id)
     async_session.add(flow1)
     async_session.add(flow2)
     await async_session.commit()
@@ -147,9 +143,7 @@ async def test_flow_role_assignments_filtered_by_scope(async_session: AsyncSessi
     role = await create_role(async_session, RoleCreate(name="Editor"))
 
     # Assign role to user for flow1 only
-    assignment = UserRoleAssignmentCreate(
-        user_id=test_user.id, role_id=role.id, scope_type="Flow", scope_id=flow1.id
-    )
+    assignment = UserRoleAssignmentCreate(user_id=test_user.id, role_id=role.id, scope_type="Flow", scope_id=flow1.id)
     await create_user_role_assignment(async_session, assignment)
 
     # Query flow1 with role assignments
@@ -460,7 +454,7 @@ async def test_flow_existing_relationships_not_affected(async_session: AsyncSess
 
 @pytest.mark.asyncio
 async def test_folder_existing_relationships_not_affected(async_session: AsyncSession, test_user: User):
-    """Test that existing Folder relationships (user, flows, children, parent) still work after adding role_assignments."""
+    """Test that existing Folder relationships still work after adding role_assignments."""
     # Create parent and child folders
     parent_folder = Folder(name="Parent Project", user_id=test_user.id)
     async_session.add(parent_folder)

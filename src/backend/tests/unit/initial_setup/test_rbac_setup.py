@@ -122,9 +122,7 @@ async def test_initialize_rbac_if_needed_creates_all_permissions(async_session: 
         ("Update", "Project"),
         ("Delete", "Project"),
     }
-    assert (
-        permission_tuples == expected_permissions
-    ), f"Should create all default permissions: {expected_permissions}"
+    assert permission_tuples == expected_permissions, f"Should create all default permissions: {expected_permissions}"
 
 
 @pytest.mark.asyncio

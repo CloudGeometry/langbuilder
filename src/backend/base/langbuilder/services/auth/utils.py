@@ -36,7 +36,9 @@ api_key_query = APIKeyQuery(name=API_KEY_NAME, scheme_name="API key query", auto
 api_key_header = APIKeyHeader(name=API_KEY_NAME, scheme_name="API key header", auto_error=False)
 
 MINIMUM_KEY_LENGTH = 32
-AUTO_LOGIN_WARNING = "In v1.6 LANGBUILDER_SKIP_AUTH_AUTO_LOGIN will be removed. Please update your authentication method."
+AUTO_LOGIN_WARNING = (
+    "In v1.6 LANGBUILDER_SKIP_AUTH_AUTO_LOGIN will be removed. Please update your authentication method."
+)
 AUTO_LOGIN_ERROR = (
     "Since v1.5, LANGBUILDER_AUTO_LOGIN requires a valid API key. "
     "Set LANGBUILDER_SKIP_AUTH_AUTO_LOGIN=true to skip this check. "
