@@ -882,13 +882,19 @@ Target: p95 < 200ms (PRD requirement)
 
 Monitor: `rbac_assignment_create_duration_seconds`
 
-**3. API Error Rate**
+**3. Editor Load Time**
+
+Target: p95 < 2.5s (PRD requirement - Epic 5, Story 5.3)
+
+Monitor: `page_load_duration_seconds` (frontend metrics)
+
+**4. API Error Rate**
 
 Target: < 0.1%
 
 Monitor: `rbac_check_errors_total`
 
-**4. System Uptime**
+**5. System Uptime**
 
 Target: 99.9% (PRD requirement)
 

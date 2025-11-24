@@ -2,6 +2,8 @@
 
 This document provides a technical deep-dive into LangBuilder's Role-Based Access Control (RBAC) implementation for developers and system architects.
 
+> **Note on Diagrams**: This document uses ASCII diagrams intentionally for maximum compatibility across terminals, text editors, and version control systems. ASCII diagrams ensure all developers can view the documentation in any environment without requiring external rendering tools.
+
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
@@ -215,6 +217,7 @@ Indexes are critical for RBAC performance. The following indexes are created:
 **Performance Targets**:
 - Permission check queries: <50ms at p95
 - Assignment queries: <200ms at p95
+- Editor load time (with RBAC checks): <2.5s at p95
 
 **Index List**:
 

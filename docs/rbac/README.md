@@ -169,6 +169,7 @@ The RBAC system is designed for high performance:
 
 - **Permission checks**: <50ms at p95 latency
 - **Role assignments**: <200ms at p95 for create/update/delete operations
+- **Editor load time**: <2.5s at p95 for page load including RBAC checks
 - **Batch permission checks**: Optimized for checking multiple resources at once
 - **System uptime**: 99.9% availability target
 
