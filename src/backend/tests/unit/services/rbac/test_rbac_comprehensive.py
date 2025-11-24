@@ -405,7 +405,7 @@ async def test_get_user_permissions_returns_all_role_permissions(
     test_flow_with_folder,
     flow_read_permission,
     flow_update_permission,
-    flow_delete_permission,  # noqa: ARG001
+    flow_delete_permission,
 ):
     """Test that get_user_permissions_for_scope returns all permissions for the role."""
     # Link multiple permissions to editor role

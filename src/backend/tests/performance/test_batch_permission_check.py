@@ -88,7 +88,7 @@ async def batch_permission_check(
     checks: list[dict],
     db: AsyncSession,
 ) -> list[dict]:
-    """Perform batch permission checks.
+    """Perform batch permission checks using optimized batch method.
 
     This simulates the batch permission check API endpoint functionality.
 
@@ -101,24 +101,33 @@ async def batch_permission_check(
     Returns:
         List of results with action, resource_type, resource_id, allowed
     """
-    results = []
-    for check in checks:
-        has_permission = await rbac_service.can_access(
-            user_id,
-            check["action"],
-            check["resource_type"],
-            check.get("resource_id"),
-            db,
-        )
-        results.append(
-            {
-                "action": check["action"],
-                "resource_type": check["resource_type"],
-                "resource_id": check.get("resource_id"),
-                "allowed": has_permission,
-            }
-        )
-    return results
+    # Convert test format to service format
+    checks_for_service = [
+        {
+            "permission_name": check["action"],
+            "scope_type": check["resource_type"],
+            "scope_id": check.get("resource_id"),
+        }
+        for check in checks
+    ]
+
+    # Use optimized batch method
+    permission_results = await rbac_service.batch_can_access(
+        user_id,
+        checks_for_service,
+        db,
+    )
+
+    # Convert results back to test format
+    return [
+        {
+            "action": check["action"],
+            "resource_type": check["resource_type"],
+            "resource_id": check.get("resource_id"),
+            "allowed": allowed,
+        }
+        for check, allowed in zip(checks, permission_results, strict=False)
+    ]
 
 
 @pytest.mark.performance

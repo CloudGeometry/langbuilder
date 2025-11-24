@@ -32,7 +32,7 @@ from sqlmodel import select
 
 
 @pytest.fixture
-async def test_user(client):  # noqa: ARG001
+async def test_user(client):
     """Create a test user (flow owner)."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -52,7 +52,7 @@ async def test_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def viewer_user(client):  # noqa: ARG001
+async def viewer_user(client):
     """Create a viewer user."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -72,7 +72,7 @@ async def viewer_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def editor_user(client):  # noqa: ARG001
+async def editor_user(client):
     """Create an editor user."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -92,7 +92,7 @@ async def editor_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def unauthorized_user(client):  # noqa: ARG001
+async def unauthorized_user(client):
     """Create a user with no permissions."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -112,7 +112,7 @@ async def unauthorized_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def viewer_role(client):  # noqa: ARG001
+async def viewer_role(client):
     """Create a Viewer role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -124,7 +124,7 @@ async def viewer_role(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def editor_role(client):  # noqa: ARG001
+async def editor_role(client):
     """Create an Editor role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -136,7 +136,7 @@ async def editor_role(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def owner_role(client):  # noqa: ARG001
+async def owner_role(client):
     """Create an Owner role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -148,7 +148,7 @@ async def owner_role(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def flow_read_permission(client):  # noqa: ARG001
+async def flow_read_permission(client):
     """Create Read permission for Flow scope."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -160,7 +160,7 @@ async def flow_read_permission(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def flow_update_permission(client):  # noqa: ARG001
+async def flow_update_permission(client):
     """Create Update permission for Flow scope."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -172,7 +172,7 @@ async def flow_update_permission(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def project_update_permission(client):  # noqa: ARG001
+async def project_update_permission(client):
     """Create Update permission for Project scope."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -185,7 +185,7 @@ async def project_update_permission(client):  # noqa: ARG001
 
 @pytest.fixture
 async def setup_viewer_role_permissions(
-    client,  # noqa: ARG001
+    client,
     viewer_role,
     flow_read_permission,
 ):
@@ -208,7 +208,7 @@ async def setup_viewer_role_permissions(
 
 @pytest.fixture
 async def setup_editor_role_permissions(
-    client,  # noqa: ARG001
+    client,
     editor_role,
     flow_read_permission,
     flow_update_permission,
@@ -246,7 +246,7 @@ async def setup_editor_role_permissions(
 
 
 @pytest.fixture
-async def test_folder(client, test_user):  # noqa: ARG001
+async def test_folder(client, test_user):
     """Create a test folder (project)."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -258,7 +258,7 @@ async def test_folder(client, test_user):  # noqa: ARG001
 
 
 @pytest.fixture
-async def test_flow(client, test_user, test_folder):  # noqa: ARG001
+async def test_flow(client, test_user, test_folder):
     """Create a test flow."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -283,8 +283,8 @@ async def test_read_flow_with_permission(
     test_flow,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    setup_viewer_role_permissions,
+    owner_role,
 ):
     """Test that users with Read permission can view a flow."""
     # Assign Viewer role to user for the flow
@@ -321,8 +321,8 @@ async def test_read_flow_with_permission(
 async def test_read_flow_without_permission(
     client: AsyncClient,
     test_flow,
-    unauthorized_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    unauthorized_user,
+    owner_role,
 ):
     """Test that users without Read permission get 403 when trying to view a flow."""
     # Login as unauthorized user
@@ -349,8 +349,8 @@ async def test_read_flow_permission_inherited_from_project(
     test_folder,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    setup_viewer_role_permissions,
+    owner_role,
 ):
     """Test that Read permission can be inherited from Project scope."""
     # Assign Viewer role to user for the PROJECT (not the flow)
@@ -386,10 +386,10 @@ async def test_read_flow_permission_inherited_from_project(
 @pytest.mark.asyncio
 async def test_read_nonexistent_flow_with_permission(
     client: AsyncClient,
-    viewer_user,  # noqa: ARG001
-    viewer_role,  # noqa: ARG001
-    setup_viewer_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    viewer_user,
+    viewer_role,
+    setup_viewer_role_permissions,
+    owner_role,
 ):
     """Test that reading non-existent flow returns 403 (not 404) for users without permission."""
     # Login as viewer (but has no permission on this specific fake flow)
@@ -418,8 +418,8 @@ async def test_upload_flow_with_project_update_permission(
     test_folder,
     editor_user,
     editor_role,
-    setup_editor_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    setup_editor_role_permissions,
+    owner_role,
 ):
     """Test that users with Update permission on Project can upload flows."""
     # Assign Editor role to user for the project
@@ -486,8 +486,8 @@ async def test_upload_flow_without_project_update_permission(
     test_folder,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    setup_viewer_role_permissions,
+    owner_role,
 ):
     """Test that users without Update permission on Project cannot upload flows."""
     # Assign Viewer role (no Update permission) to user for the project
@@ -535,8 +535,8 @@ async def test_upload_flow_without_project_update_permission(
 @pytest.mark.asyncio
 async def test_upload_flow_to_nonexistent_project(
     client: AsyncClient,
-    editor_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    editor_user,
+    owner_role,
 ):
     """Test that uploading to non-existent project returns 404."""
     # Login as editor
@@ -570,8 +570,8 @@ async def test_upload_flow_to_nonexistent_project(
 @pytest.mark.asyncio
 async def test_upload_flow_without_folder_id(
     client: AsyncClient,
-    test_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    test_user,
+    owner_role,
 ):
     """Test that uploading without folder_id succeeds (uses default folder)."""
     # Login as test user
@@ -609,8 +609,8 @@ async def test_upload_multiple_flows(
     test_folder,
     editor_user,
     editor_role,
-    setup_editor_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    setup_editor_role_permissions,
+    owner_role,
 ):
     """Test uploading multiple flows in a single file."""
     # Assign Editor role to user for the project
@@ -668,8 +668,8 @@ async def test_build_flow_with_read_permission(
     test_flow,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    setup_viewer_role_permissions,
+    owner_role,
 ):
     """Test that users with Read permission can execute a flow."""
     # Assign Viewer role to user for the flow
@@ -710,8 +710,8 @@ async def test_build_flow_with_read_permission(
 async def test_build_flow_without_read_permission(
     client: AsyncClient,
     test_flow,
-    unauthorized_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    unauthorized_user,
+    owner_role,
 ):
     """Test that users without Read permission cannot execute a flow."""
     # Login as unauthorized user
@@ -742,8 +742,8 @@ async def test_build_flow_permission_inherited_from_project(
     test_folder,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    setup_viewer_role_permissions,
+    owner_role,
 ):
     """Test that Read permission for execution can be inherited from Project scope."""
     # Assign Viewer role to user for the PROJECT (not the flow)
@@ -782,8 +782,8 @@ async def test_build_flow_permission_inherited_from_project(
 @pytest.mark.asyncio
 async def test_build_nonexistent_flow(
     client: AsyncClient,
-    viewer_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    viewer_user,
+    owner_role,
 ):
     """Test that building non-existent flow returns 403 (not 404) for users without permission."""
     # Login as viewer
@@ -813,8 +813,8 @@ async def test_build_nonexistent_flow(
 @pytest.mark.asyncio
 async def test_read_flow_403_before_404_pattern(
     client: AsyncClient,
-    unauthorized_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    unauthorized_user,
+    owner_role,
 ):
     """Test that 403 is returned before 404 to prevent information disclosure."""
     # Login as unauthorized user
@@ -837,8 +837,8 @@ async def test_read_flow_403_before_404_pattern(
 @pytest.mark.asyncio
 async def test_build_flow_403_before_404_pattern(
     client: AsyncClient,
-    unauthorized_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    unauthorized_user,
+    owner_role,
 ):
     """Test that 403 is returned before 404 for build endpoint."""
     # Login as unauthorized user
@@ -865,8 +865,8 @@ async def test_build_flow_403_before_404_pattern(
 @pytest.mark.asyncio
 async def test_upload_flow_404_for_nonexistent_project(
     client: AsyncClient,
-    editor_user,  # noqa: ARG001
-    owner_role,  # noqa: ARG001
+    editor_user,
+    owner_role,
 ):
     """Test that upload returns 404 for non-existent project (not 403)."""
     # Login as editor

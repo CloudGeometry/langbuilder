@@ -7,7 +7,7 @@ from langbuilder.services.database.models.api_key import ApiKeyCreate
 async def api_key(
     client,
     logged_in_headers,
-    active_user,  # noqa: ARG001
+    active_user,
 ):
     api_key = ApiKeyCreate(name="test-api-key")
 

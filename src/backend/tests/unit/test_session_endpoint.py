@@ -8,7 +8,7 @@ from langbuilder.services.deps import session_scope
 
 
 @pytest.fixture
-async def messages_with_flow_ids(session):  # noqa: ARG001
+async def messages_with_flow_ids(session):
     """Create messages with different session_ids and flow_ids for testing sessions endpoint."""
     async with session_scope() as _session:
         flow_id_1 = uuid4()

@@ -11,7 +11,7 @@ from sqlmodel import select
 
 
 @pytest.fixture
-async def super_user(client):  # noqa: ARG001
+async def super_user(client):
     settings_manager = get_settings_service()
     auth_settings = settings_manager.auth_settings
     async with session_getter(get_db_service()) as db:
@@ -25,7 +25,7 @@ async def super_user(client):  # noqa: ARG001
 @pytest.fixture
 async def super_user_headers(
     client: AsyncClient,
-    super_user,  # noqa: ARG001
+    super_user,
 ):
     settings_service = get_settings_service()
     auth_settings = settings_service.auth_settings
@@ -41,7 +41,7 @@ async def super_user_headers(
 
 
 @pytest.fixture
-async def deactivated_user(client):  # noqa: ARG001
+async def deactivated_user(client):
     async with session_getter(get_db_service()) as session:
         user = User(
             username="deactivateduser",
@@ -196,7 +196,7 @@ async def test_patch_user(client: AsyncClient, active_user, logged_in_headers):
 async def test_patch_reset_password(client: AsyncClient, active_user, logged_in_headers):
     user_id = active_user.id
     update_data = UserUpdate(
-        password="newpassword",  # noqa: S106
+        password="newpassword",
     )
 
     response = await client.patch(

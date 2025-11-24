@@ -37,7 +37,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
         """Return the file names mapping for version-specific files."""
 
     def test_successful_structured_output_generation_with_patch_with_config(self):
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {"objects": [{"field": "value"}]}
@@ -340,7 +340,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_multiple_patterns_with_duplicates_and_variations(self):
         """Test that multiple patterns are extracted while removing exact duplicates but keeping variations."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {
@@ -580,7 +580,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_structured_output_returns_dict_when_no_objects_key(self):
         """Test that when trustcall returns a dict without 'objects' key, we return the dict directly."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             # Return trustcall-style response but without BaseModel that creates "objects" key
             return {
                 "messages": ["mock_message"],
@@ -607,7 +607,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_structured_output_returns_direct_response_when_not_dict(self):
         """Test that when trustcall returns a non-dict response, we return it directly."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             # Return a string response (edge case)
             return "Simple string response"
 
@@ -629,7 +629,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_structured_output_handles_empty_responses_array(self):
         """Test that when trustcall returns empty responses array, we return the result dict."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             # Return trustcall-style response with empty responses
             return {
                 "messages": ["mock_message"],
@@ -659,7 +659,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_output_fails_when_base_returns_non_list(self):
         """Test that build_structured_output() fails when base method returns non-list."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             # Return a dict instead of list with objects
             return {
                 "messages": ["mock_message"],
@@ -686,7 +686,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_output_returns_data_with_dict(self):
         """Test that build_structured_output() returns Data object with dict data."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {"objects": [{"field": "value2", "number": 24}]}  # Return only one object
@@ -734,7 +734,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_output_returns_multiple_objects(self):
         """Test that build_structured_output() returns Data object with multiple objects wrapped in results."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {
@@ -785,7 +785,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_output_returns_data_with_single_item(self):
         """Test that build_structured_output() returns Data object when only one item in objects."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {"objects": [{"name": "John Doe", "age": 30}]}
@@ -826,7 +826,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_output_data_object_properties(self):
         """Test that the returned Data object has proper properties."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {"objects": [{"product": "iPhone", "price": 999.99, "available": True}]}
@@ -879,7 +879,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_dataframe_returns_dataframe_with_single_data(self):
         """Test that build_structured_dataframe() returns DataFrame object with single Data item."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {"objects": [{"field": "value2", "number": 24}]}
@@ -922,7 +922,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_dataframe_returns_dataframe_with_multiple_data(self):
         """Test that build_structured_dataframe() returns DataFrame object with multiple Data items."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {
@@ -977,7 +977,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_dataframe_fails_when_base_returns_non_list(self):
         """Test that build_structured_dataframe() fails when base method returns non-list."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             return {
                 "messages": ["mock_message"],
                 "responses": [{"single_item": "value"}],
@@ -1003,7 +1003,7 @@ class TestStructuredOutputComponent(ComponentTestBaseWithoutClient):
     def test_build_structured_dataframe_fails_when_empty_output(self):
         """Test that build_structured_dataframe() fails when base method returns empty list."""
 
-        def mock_get_chat_result(runnable, system_message, input_value, config):  # noqa: ARG001
+        def mock_get_chat_result(runnable, system_message, input_value, config):
             class MockBaseModel(BaseModel):
                 def model_dump(self, **__):
                     return {"objects": []}

@@ -23,7 +23,7 @@ from sqlmodel import select
 
 
 @pytest.fixture
-async def viewer_user(client):  # noqa: ARG001
+async def viewer_user(client):
     """Create a test user with Viewer role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -44,7 +44,7 @@ async def viewer_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def editor_user(client):  # noqa: ARG001
+async def editor_user(client):
     """Create a test user with Editor role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -64,7 +64,7 @@ async def editor_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def owner_user(client):  # noqa: ARG001
+async def owner_user(client):
     """Create a test user with Owner role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -84,7 +84,7 @@ async def owner_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def admin_user(client):  # noqa: ARG001
+async def admin_user(client):
     """Create a test user with Admin role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -104,7 +104,7 @@ async def admin_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def superuser(client):  # noqa: ARG001
+async def superuser(client):
     """Create a superuser."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -124,7 +124,7 @@ async def superuser(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def viewer_role(client):  # noqa: ARG001
+async def viewer_role(client):
     """Create a Viewer role with Read permission."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -137,7 +137,7 @@ async def viewer_role(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def editor_role(client):  # noqa: ARG001
+async def editor_role(client):
     """Create an Editor role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -150,7 +150,7 @@ async def editor_role(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def owner_role(client):  # noqa: ARG001
+async def owner_role(client):
     """Create an Owner role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -163,7 +163,7 @@ async def owner_role(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def admin_role(client):  # noqa: ARG001
+async def admin_role(client):
     """Create an Admin role."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -176,7 +176,7 @@ async def admin_role(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def project_read_permission(client):  # noqa: ARG001
+async def project_read_permission(client):
     """Create Read permission for Project scope."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -189,7 +189,7 @@ async def project_read_permission(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def project_create_permission(client):  # noqa: ARG001
+async def project_create_permission(client):
     """Create Create permission for Project scope."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -202,7 +202,7 @@ async def project_create_permission(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def project_update_permission(client):  # noqa: ARG001
+async def project_update_permission(client):
     """Create Update permission for Project scope."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -215,7 +215,7 @@ async def project_update_permission(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def project_delete_permission(client):  # noqa: ARG001
+async def project_delete_permission(client):
     """Create Delete permission for Project scope."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -228,7 +228,7 @@ async def project_delete_permission(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def test_project_1(client, viewer_user):  # noqa: ARG001
+async def test_project_1(client, viewer_user):
     """Create test project 1."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -244,7 +244,7 @@ async def test_project_1(client, viewer_user):  # noqa: ARG001
 
 
 @pytest.fixture
-async def test_project_2(client, viewer_user):  # noqa: ARG001
+async def test_project_2(client, viewer_user):
     """Create test project 2."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -260,7 +260,7 @@ async def test_project_2(client, viewer_user):  # noqa: ARG001
 
 
 @pytest.fixture
-async def test_project_3(client, editor_user):  # noqa: ARG001
+async def test_project_3(client, editor_user):
     """Create test project 3 (owned by editor_user)."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -276,7 +276,7 @@ async def test_project_3(client, editor_user):  # noqa: ARG001
 
 
 @pytest.fixture
-async def starter_project(client, viewer_user):  # noqa: ARG001
+async def starter_project(client, viewer_user):
     """Create a Starter Project (immutable)."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -296,7 +296,7 @@ async def starter_project(client, viewer_user):  # noqa: ARG001
 
 @pytest.fixture
 async def setup_viewer_role_permissions(
-    client,  # noqa: ARG001
+    client,
     viewer_role,
     project_read_permission,
 ):
@@ -320,7 +320,7 @@ async def setup_viewer_role_permissions(
 
 @pytest.fixture
 async def setup_editor_role_permissions(
-    client,  # noqa: ARG001
+    client,
     editor_role,
     project_read_permission,
     project_update_permission,
@@ -358,7 +358,7 @@ async def setup_editor_role_permissions(
 
 @pytest.fixture
 async def setup_owner_role_permissions(
-    client,  # noqa: ARG001
+    client,
     owner_role,
     project_read_permission,
     project_update_permission,
@@ -397,7 +397,7 @@ async def setup_owner_role_permissions(
 
 @pytest.fixture
 async def setup_admin_role_permissions(
-    client,  # noqa: ARG001
+    client,
     admin_role,
     project_read_permission,
     project_update_permission,
@@ -440,10 +440,10 @@ async def setup_admin_role_permissions(
 @pytest.mark.asyncio
 async def test_list_projects_superuser_sees_all_projects(
     client: AsyncClient,
-    superuser,  # noqa: ARG001
-    test_project_1,  # noqa: ARG001
-    test_project_2,  # noqa: ARG001
-    test_project_3,  # noqa: ARG001
+    superuser,
+    test_project_1,
+    test_project_2,
+    test_project_3,
 ):
     """Test that superusers can see all projects regardless of RBAC assignments."""
     # Login as superuser
@@ -472,10 +472,10 @@ async def test_list_projects_global_admin_sees_all_projects(
     client: AsyncClient,
     admin_user,
     admin_role,
-    setup_admin_role_permissions,  # noqa: ARG001
-    test_project_1,  # noqa: ARG001
-    test_project_2,  # noqa: ARG001
-    test_project_3,  # noqa: ARG001
+    setup_admin_role_permissions,
+    test_project_1,
+    test_project_2,
+    test_project_3,
 ):
     """Test that Global Admin users can see all projects."""
     # Assign Global Admin role
@@ -516,9 +516,9 @@ async def test_list_projects_user_with_project_read_permission(
     client: AsyncClient,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
+    setup_viewer_role_permissions,
     test_project_1,
-    test_project_2,  # noqa: ARG001
+    test_project_2,
 ):
     """Test that users with Project-specific Read permission see only those projects."""
     # Assign Viewer role to project 1 only
@@ -556,9 +556,9 @@ async def test_list_projects_user_with_project_read_permission(
 @pytest.mark.asyncio
 async def test_list_projects_user_with_no_permissions(
     client: AsyncClient,
-    viewer_user,  # noqa: ARG001
-    test_project_1,  # noqa: ARG001
-    test_project_2,  # noqa: ARG001
+    viewer_user,
+    test_project_1,
+    test_project_2,
 ):
     """Test that users without any permissions see no projects."""
     # Login as viewer (no role assignments)
@@ -586,7 +586,7 @@ async def test_create_project_assigns_owner_role(
     client: AsyncClient,
     viewer_user,
     owner_role,
-    setup_owner_role_permissions,  # noqa: ARG001
+    setup_owner_role_permissions,
 ):
     """Test that creating a project automatically assigns Owner role to the creating user."""
     # Login as viewer
@@ -634,7 +634,7 @@ async def test_create_project_assigns_owner_role(
 @pytest.mark.asyncio
 async def test_create_project_superuser_bypasses_permission_check(
     client: AsyncClient,
-    superuser,  # noqa: ARG001
+    superuser,
 ):
     """Test that superusers can create projects without explicit permission assignments."""
     # Login as superuser (no role assignments needed)
@@ -663,7 +663,7 @@ async def test_create_project_global_admin_bypasses_permission_check(
     client: AsyncClient,
     admin_user,
     admin_role,
-    setup_admin_role_permissions,  # noqa: ARG001
+    setup_admin_role_permissions,
 ):
     """Test that Global Admin users can create projects."""
     # Assign Global Admin role
@@ -707,7 +707,7 @@ async def test_get_project_with_read_permission(
     client: AsyncClient,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
+    setup_viewer_role_permissions,
     test_project_1,
 ):
     """Test that users with Read permission can view a project."""
@@ -748,7 +748,7 @@ async def test_get_project_with_read_permission(
 @pytest.mark.asyncio
 async def test_get_project_without_read_permission(
     client: AsyncClient,
-    viewer_user,  # noqa: ARG001
+    viewer_user,
     test_project_1,
 ):
     """Test that users without Read permission cannot view a project."""
@@ -777,7 +777,7 @@ async def test_update_project_with_update_permission(
     client: AsyncClient,
     editor_user,
     editor_role,
-    setup_editor_role_permissions,  # noqa: ARG001
+    setup_editor_role_permissions,
     test_project_3,
 ):
     """Test that users with Update permission can update projects."""
@@ -820,7 +820,7 @@ async def test_update_project_without_update_permission(
     client: AsyncClient,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
+    setup_viewer_role_permissions,
     test_project_1,
 ):
     """Test that users without Update permission cannot update projects."""
@@ -864,7 +864,7 @@ async def test_delete_project_with_delete_permission_owner(
     client: AsyncClient,
     viewer_user,
     owner_role,
-    setup_owner_role_permissions,  # noqa: ARG001
+    setup_owner_role_permissions,
     test_project_1,
 ):
     """Test that users with Owner role (Delete permission) can delete projects."""
@@ -907,7 +907,7 @@ async def test_delete_project_without_delete_permission_viewer(
     client: AsyncClient,
     viewer_user,
     viewer_role,
-    setup_viewer_role_permissions,  # noqa: ARG001
+    setup_viewer_role_permissions,
     test_project_1,
 ):
     """Test that users with Viewer role (no Delete permission) cannot delete projects."""
@@ -952,7 +952,7 @@ async def test_delete_starter_project_blocked(
     client: AsyncClient,
     viewer_user,
     owner_role,
-    setup_owner_role_permissions,  # noqa: ARG001
+    setup_owner_role_permissions,
     starter_project,
 ):
     """Test that Starter Projects cannot be deleted even with Owner/Delete permission."""
@@ -995,7 +995,7 @@ async def test_delete_starter_project_blocked(
 @pytest.mark.asyncio
 async def test_delete_project_superuser_cannot_delete_starter_project(
     client: AsyncClient,
-    superuser,  # noqa: ARG001
+    superuser,
     starter_project,
 ):
     """Test that even superusers cannot delete Starter Projects."""
@@ -1029,7 +1029,7 @@ async def test_delete_project_global_admin_bypasses_permission_check(
     client: AsyncClient,
     admin_user,
     admin_role,
-    setup_admin_role_permissions,  # noqa: ARG001
+    setup_admin_role_permissions,
     test_project_1,
 ):
     """Test that Global Admin users can delete any project (except Starter Projects)."""
@@ -1070,7 +1070,7 @@ async def test_delete_project_global_admin_bypasses_permission_check(
 @pytest.mark.asyncio
 async def test_delete_project_without_any_permission(
     client: AsyncClient,
-    viewer_user,  # noqa: ARG001
+    viewer_user,
     test_project_1,
 ):
     """Test that users without any permissions cannot delete projects."""

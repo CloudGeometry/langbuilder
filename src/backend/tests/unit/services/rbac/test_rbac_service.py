@@ -151,7 +151,7 @@ async def test_can_access_global_admin_bypass(
     async_session,
     test_user,
     admin_role,
-    flow_read_permission,  # noqa: ARG001
+    flow_read_permission,
 ):
     """Test that Global Admin role bypasses permission checks."""
     # Assign Global Admin role directly (bypass validation for test setup)
@@ -308,7 +308,7 @@ async def test_assign_role_success(rbac_service, async_session, test_user, test_
 
 
 @pytest.mark.asyncio
-async def test_assign_role_immutable(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_immutable(rbac_service, async_session, test_user, test_role):
     """Test assigning an immutable role."""
     # Use Global scope to avoid needing to create a Flow
     assignment = await rbac_service.assign_role(
@@ -340,7 +340,7 @@ async def test_assign_role_not_found(rbac_service, async_session, test_user):
 
 
 @pytest.mark.asyncio
-async def test_assign_role_duplicate(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_duplicate(rbac_service, async_session, test_user, test_role):
     """Test assigning a duplicate role."""
     # Use Global scope to avoid needing to create a Flow
     # First assignment
@@ -369,7 +369,7 @@ async def test_assign_role_duplicate(rbac_service, async_session, test_user, tes
 
 
 @pytest.mark.asyncio
-async def test_remove_role_success(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_remove_role_success(rbac_service, async_session, test_user, test_role):
     """Test successful role removal."""
     # Use Global scope to avoid needing to create a Flow
     assignment = await rbac_service.assign_role(
@@ -398,7 +398,7 @@ async def test_remove_role_not_found(rbac_service, async_session):
 
 
 @pytest.mark.asyncio
-async def test_remove_role_immutable(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_remove_role_immutable(rbac_service, async_session, test_user, test_role):
     """Test removing an immutable role assignment fails."""
     # Use Global scope to avoid needing to create a Flow
     assignment = await rbac_service.assign_role(
@@ -420,7 +420,7 @@ async def test_remove_role_immutable(rbac_service, async_session, test_user, tes
 
 
 @pytest.mark.asyncio
-async def test_update_role_success(rbac_service, async_session, test_user, test_role, viewer_role):  # noqa: ARG001
+async def test_update_role_success(rbac_service, async_session, test_user, test_role, viewer_role):
     """Test successful role update."""
     # Use Global scope to avoid needing to create a Flow
     assignment = await rbac_service.assign_role(
@@ -453,7 +453,7 @@ async def test_update_role_not_found(rbac_service, async_session):
 
 
 @pytest.mark.asyncio
-async def test_update_role_immutable(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_update_role_immutable(rbac_service, async_session, test_user, test_role):
     """Test updating an immutable role assignment fails."""
     # Use Global scope to avoid needing to create a Flow
     assignment = await rbac_service.assign_role(
@@ -476,7 +476,7 @@ async def test_update_role_immutable(rbac_service, async_session, test_user, tes
 
 
 @pytest.mark.asyncio
-async def test_update_role_new_role_not_found(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_update_role_new_role_not_found(rbac_service, async_session, test_user, test_role):
     """Test updating to a non-existent role."""
     # Use Global scope to avoid needing to create a Flow
     assignment = await rbac_service.assign_role(
@@ -500,7 +500,7 @@ async def test_update_role_new_role_not_found(rbac_service, async_session, test_
 
 
 @pytest.mark.asyncio
-async def test_list_user_assignments_all(rbac_service, async_session, test_user, test_role, viewer_role, test_folder):  # noqa: ARG001
+async def test_list_user_assignments_all(rbac_service, async_session, test_user, test_role, viewer_role, test_folder):
     """Test listing all role assignments."""
     # Create multiple assignments with Global and Project scopes
     await rbac_service.assign_role(
@@ -525,7 +525,7 @@ async def test_list_user_assignments_all(rbac_service, async_session, test_user,
 
 
 @pytest.mark.asyncio
-async def test_list_user_assignments_filtered(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_list_user_assignments_filtered(rbac_service, async_session, test_user, test_role):
     """Test listing role assignments filtered by user."""
     # Create assignment for test_user with Global scope
     await rbac_service.assign_role(

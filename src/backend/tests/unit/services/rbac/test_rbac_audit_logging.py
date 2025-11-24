@@ -119,7 +119,7 @@ async def test_assign_role_logs_with_project_scope(
     async_session,
     test_user,
     admin_user,
-    test_role,  # noqa: ARG001
+    test_role,
     test_folder,
 ):
     """Test that assign_role logs correct scope_id for Project scope."""
@@ -142,7 +142,7 @@ async def test_assign_role_logs_with_project_scope(
 
 
 @pytest.mark.asyncio
-async def test_assign_role_logs_immutable_flag(rbac_service, async_session, test_user, admin_user, test_role):  # noqa: ARG001
+async def test_assign_role_logs_immutable_flag(rbac_service, async_session, test_user, admin_user, test_role):
     """Test that assign_role logs is_immutable flag correctly."""
     with patch("langbuilder.services.rbac.service.logger") as mock_logger:
         assignment = await rbac_service.assign_role(
@@ -206,7 +206,7 @@ async def test_remove_role_logs_with_project_scope(
     async_session,
     test_user,
     admin_user,
-    test_role,  # noqa: ARG001
+    test_role,
     test_folder,
 ):
     """Test that remove_role logs correct scope_id for Project scope."""
@@ -316,7 +316,7 @@ async def test_assign_role_audit_log_contains_all_required_fields(
     async_session,
     test_user,
     admin_user,
-    test_role,  # noqa: ARG001
+    test_role,
 ):
     """Test that assign_role audit log contains all required fields for compliance."""
     with patch("langbuilder.services.rbac.service.logger") as mock_logger:
@@ -353,7 +353,7 @@ async def test_remove_role_audit_log_contains_all_required_fields(
     async_session,
     test_user,
     admin_user,
-    test_role,  # noqa: ARG001
+    test_role,
 ):
     """Test that remove_role audit log contains all required fields for compliance."""
     # First create an assignment
@@ -390,8 +390,8 @@ async def test_update_role_audit_log_contains_all_required_fields(
     async_session,
     test_user,
     admin_user,
-    test_role,  # noqa: ARG001
-    viewer_role,  # noqa: ARG001
+    test_role,
+    viewer_role,
 ):
     """Test that update_role audit log contains all required fields for compliance."""
     # First create an assignment
@@ -432,7 +432,7 @@ async def test_update_role_audit_log_contains_all_required_fields(
 
 
 @pytest.mark.asyncio
-async def test_audit_logs_serialize_uuids_to_strings(rbac_service, async_session, test_user, admin_user, test_role):  # noqa: ARG001
+async def test_audit_logs_serialize_uuids_to_strings(rbac_service, async_session, test_user, admin_user, test_role):
     """Test that all UUID fields are serialized to strings for JSON compatibility."""
     with patch("langbuilder.services.rbac.service.logger") as mock_logger:
         await rbac_service.assign_role(
@@ -465,7 +465,7 @@ async def test_audit_logs_serialize_uuids_to_strings(rbac_service, async_session
 
 
 @pytest.mark.asyncio
-async def test_audit_logs_handle_none_scope_id(rbac_service, async_session, test_user, admin_user, test_role):  # noqa: ARG001
+async def test_audit_logs_handle_none_scope_id(rbac_service, async_session, test_user, admin_user, test_role):
     """Test that audit logs correctly handle None scope_id for Global scope."""
     with patch("langbuilder.services.rbac.service.logger") as mock_logger:
         await rbac_service.assign_role(

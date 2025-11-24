@@ -234,9 +234,9 @@ def _setup_env(monkeypatch):
 
 @pytest.fixture(name="distributed_client")
 def distributed_client_fixture(
-    session: Session,  # noqa: ARG001
+    session: Session,
     monkeypatch,
-    distributed_env,  # noqa: ARG001
+    distributed_env,
 ):
     # Here we load the .env from ../deploy/.env
     from langbuilder.core import celery_app
@@ -373,7 +373,7 @@ def use_noop_session(monkeypatch):
 
 @pytest.fixture(name="client")
 async def client_fixture(
-    session: Session,  # noqa: ARG001
+    session: Session,
     monkeypatch,
     request,
     load_flows_dir,
@@ -433,7 +433,7 @@ async def session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
-async def default_folder(client, active_user) -> AsyncGenerator[Folder, None]:  # noqa: ARG001
+async def default_folder(client, active_user) -> AsyncGenerator[Folder, None]:
     """Provide a default folder for testing RBAC with Project scope.
 
     This fixture creates a test folder (project) for testing project-scoped permissions.
@@ -464,7 +464,7 @@ def runner(tmp_path):
 async def test_user(client):
     user_data = UserCreate(
         username="testuser",
-        password="testpassword",  # noqa: S106
+        password="testpassword",
     )
     response = await client.post("api/v1/users/", json=user_data.model_dump())
     assert response.status_code == 201
@@ -475,7 +475,7 @@ async def test_user(client):
 
 
 @pytest.fixture
-async def active_user(client):  # noqa: ARG001
+async def active_user(client):
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
         user = User(
@@ -525,7 +525,7 @@ async def logged_in_headers(client, active_user):
 
 
 @pytest.fixture
-async def active_super_user(client):  # noqa: ARG001
+async def active_super_user(client):
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
         user = User(
@@ -563,7 +563,7 @@ async def active_super_user(client):  # noqa: ARG001
 
 
 @pytest.fixture
-async def super_user(client):  # noqa: ARG001
+async def super_user(client):
     """Create a superuser for testing (alias for active_super_user)."""
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
@@ -607,7 +607,7 @@ async def logged_in_headers_super_user(client, active_super_user):
 
 @pytest.fixture
 async def flow(
-    client,  # noqa: ARG001
+    client,
     json_flow: str,
     active_user,
 ):
@@ -752,7 +752,7 @@ async def get_simple_api_test(client, logged_in_headers, json_simple_api_test):
 
 
 @pytest.fixture(name="starter_project")
-async def get_starter_project(client, active_user):  # noqa: ARG001
+async def get_starter_project(client, active_user):
     # once the client is created, we can get the starter project
     async with session_scope() as session:
         stmt = (

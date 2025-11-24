@@ -478,3 +478,152 @@ class RBACService(Service):
 
         result = await db.exec(stmt)
         return list(result.all())
+
+    async def batch_can_access(
+        self,
+        user_id: UUID | str,
+        checks: list[dict],
+        db: AsyncSession,
+    ) -> list[bool]:
+        """Optimized batch permission check using a single SQL query.
+
+        This method performs all permission checks in a single database query using JOINs,
+        avoiding the N+1 query problem of sequential can_access() calls.
+
+        Args:
+            user_id: The user's ID (UUID or string)
+            checks: List of dicts with keys: permission_name, scope_type, scope_id
+            db: Database session
+
+        Returns:
+            list[bool]: List of permission results in the same order as checks
+
+        Performance:
+            - Single database query regardless of number of checks
+            - Uses SQL JOINs for efficient data retrieval
+            - Processes results in-memory for fast lookup
+            - Target: <100ms for 10 resources, <500ms for 50 resources
+        """
+        if not checks:
+            return []
+
+        # Convert string UUID to UUID object
+        if isinstance(user_id, str):
+            user_id = UUID(user_id)
+
+        # 1. Check superuser bypass (single query)
+        user = await get_user_by_id(db, user_id)
+        if user and user.is_superuser:
+            # Superuser has all permissions
+            return [True] * len(checks)
+
+        # 2. Check Global Admin role bypass (single query)
+        if await self._has_global_admin_role(user_id, db):
+            # Global Admin has all permissions
+            return [True] * len(checks)
+
+        # 3. Extract unique scope combinations for batch fetching
+        # Group by (scope_type, scope_id) to avoid duplicate queries
+        scope_combinations = set()
+        for check in checks:
+            scope_type = check["scope_type"]
+            scope_id = check.get("scope_id")
+            # Convert string scope_id to UUID if needed
+            if isinstance(scope_id, str):
+                scope_id = UUID(scope_id)
+            scope_combinations.add((scope_type, scope_id))
+
+        # 4. Batch fetch all role assignments for the user with all relevant scopes
+        # Build a query that fetches all assignments for this user
+        from sqlalchemy import or_
+
+        scope_conditions = []
+        for scope_type, scope_id in scope_combinations:
+            scope_conditions.append(
+                (UserRoleAssignment.scope_type == scope_type) & (UserRoleAssignment.scope_id == scope_id)
+            )
+
+        # Add inherited Flow->Project relationships
+        # We need to handle Flow scope inheritance, so fetch Project assignments too
+        flow_scope_ids = [scope_id for scope_type, scope_id in scope_combinations if scope_type == "Flow"]
+        if flow_scope_ids:
+            # Fetch the project IDs for these flows
+            flow_stmt = select(Flow).where(Flow.id.in_(flow_scope_ids))
+            flow_result = await db.exec(flow_stmt)
+            flows = list(flow_result.all())
+            scope_conditions.extend(
+                (UserRoleAssignment.scope_type == "Project") & (UserRoleAssignment.scope_id == flow.folder_id)
+                for flow in flows
+                if flow.folder_id
+            )
+
+        # Fetch all relevant role assignments in a single query
+        if scope_conditions:
+            stmt = (
+                select(UserRoleAssignment)
+                .where(
+                    UserRoleAssignment.user_id == user_id,
+                    or_(*scope_conditions),
+                )
+                .options(selectinload(UserRoleAssignment.role))
+            )
+            result = await db.exec(stmt)
+            assignments = list(result.all())
+        else:
+            assignments = []
+
+        # Build a map of (scope_type, scope_id) -> role_id
+        scope_to_role: dict[tuple[str, UUID | None], UUID] = {}
+        for assignment in assignments:
+            key = (assignment.scope_type, assignment.scope_id)
+            scope_to_role[key] = assignment.role_id
+
+        # Handle Flow inheritance: if Flow has no direct assignment, check Project
+        if flow_scope_ids:
+            for flow in flows:
+                flow_key = ("Flow", flow.id)
+                if flow_key not in scope_to_role and flow.folder_id:
+                    project_key = ("Project", flow.folder_id)
+                    if project_key in scope_to_role:
+                        scope_to_role[flow_key] = scope_to_role[project_key]
+
+        # 5. Fetch all permissions for the roles found (single query with JOIN)
+        role_ids = list(set(scope_to_role.values()))
+        if role_ids:
+            perm_stmt = select(RolePermission, Permission).join(Permission).where(RolePermission.role_id.in_(role_ids))
+            perm_result = await db.exec(perm_stmt)
+            role_permissions_data = list(perm_result.all())
+
+            # Build a map of (role_id, permission_name, scope_type) -> True
+            role_perm_map: dict[tuple[UUID, str, str], bool] = {}
+            for role_perm, permission in role_permissions_data:
+                key = (role_perm.role_id, permission.name, permission.scope)
+                role_perm_map[key] = True
+        else:
+            role_perm_map = {}
+
+        # 6. Process each check using the in-memory maps
+        results = []
+        for check in checks:
+            permission_name = check["permission_name"]
+            scope_type = check["scope_type"]
+            scope_id = check.get("scope_id")
+
+            # Convert string scope_id to UUID if needed
+            if isinstance(scope_id, str):
+                scope_id = UUID(scope_id)
+
+            # Look up the role for this scope
+            scope_key = (scope_type, scope_id)
+            role_id = scope_to_role.get(scope_key)
+
+            if not role_id:
+                results.append(False)
+                continue
+
+            # Check if the role has the permission
+            perm_key = (role_id, permission_name, scope_type)
+            has_permission = perm_key in role_perm_map
+            results.append(has_permission)
+
+        return results

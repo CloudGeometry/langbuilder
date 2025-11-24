@@ -22,7 +22,7 @@ async def created_message():
 
 
 @pytest.fixture
-async def created_messages(session):  # noqa: ARG001
+async def created_messages(session):
     async with session_scope() as _session:
         messages = [
             MessageCreate(text="Test message 1", sender="User", sender_name="User", session_id="session_id2"),
@@ -34,7 +34,7 @@ async def created_messages(session):  # noqa: ARG001
 
 
 @pytest.fixture
-async def messages_with_datetime_session_id(session):  # noqa: ARG001
+async def messages_with_datetime_session_id(session):
     """Create messages with datetime-like session IDs that contain characters requiring URL encoding."""
     datetime_session_id = "2024-01-15 10:30:45 UTC"  # Contains spaces and colons
     async with session_scope() as _session:

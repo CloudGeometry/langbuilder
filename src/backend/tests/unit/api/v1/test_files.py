@@ -25,7 +25,7 @@ from tests.conftest import _delete_transactions_and_vertex_builds
 
 
 @pytest.fixture(name="files_created_api_key")
-async def files_created_api_key(files_client, files_active_user):  # noqa: ARG001
+async def files_created_api_key(files_client, files_active_user):
     hashed = get_password_hash("random_key")
     api_key = ApiKey(
         name="files_created_api_key",
@@ -49,7 +49,7 @@ async def files_created_api_key(files_client, files_active_user):  # noqa: ARG00
 
 
 @pytest.fixture(name="files_active_user")
-async def files_active_user(files_client):  # noqa: ARG001
+async def files_active_user(files_client):
     db_manager = get_db_service()
     async with db_manager.with_session() as session:
         user = User(
@@ -79,7 +79,7 @@ async def files_active_user(files_client):  # noqa: ARG001
 
 @pytest.fixture(name="files_flow")
 async def files_flow(
-    files_client,  # noqa: ARG001
+    files_client,
     json_flow: str,
     files_active_user,
 ):

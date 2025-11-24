@@ -189,7 +189,7 @@ async def test_component_logging():
     component._id = "test_component_id"  # Set component ID
 
     # Create a custom callback for logging
-    def log_callback(*, manager: EventManager, event_type: str, data: dict):  # noqa: ARG001
+    def log_callback(*, manager: EventManager, event_type: str, data: dict):
         manager.send_event(
             event_type="info", data={"message": data["message"], "id": data.get("component_id", "test_id")}
         )

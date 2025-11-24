@@ -79,7 +79,7 @@ async def test_flow(async_session: AsyncSession, test_user, test_folder):
 
 
 @pytest.mark.asyncio
-async def test_assign_role_user_not_found(rbac_service, async_session, test_role):  # noqa: ARG001
+async def test_assign_role_user_not_found(rbac_service, async_session, test_role):
     """Test that assigning a role to a non-existent user raises UserNotFoundException."""
     non_existent_user_id = uuid4()
 
@@ -121,7 +121,7 @@ async def test_assign_role_role_not_found(rbac_service, async_session, test_user
 
 
 @pytest.mark.asyncio
-async def test_assign_role_flow_scope_without_scope_id(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_flow_scope_without_scope_id(rbac_service, async_session, test_user, test_role):
     """Test that Flow scope without scope_id raises InvalidScopeException."""
     with pytest.raises(InvalidScopeException) as exc_info:
         await rbac_service.assign_role(
@@ -138,7 +138,7 @@ async def test_assign_role_flow_scope_without_scope_id(rbac_service, async_sessi
 
 
 @pytest.mark.asyncio
-async def test_assign_role_flow_not_found(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_flow_not_found(rbac_service, async_session, test_user, test_role):
     """Test that assigning a role for a non-existent Flow raises ResourceNotFoundException."""
     non_existent_flow_id = uuid4()
 
@@ -180,7 +180,7 @@ async def test_assign_role_flow_scope_valid(rbac_service, async_session, test_us
 
 
 @pytest.mark.asyncio
-async def test_assign_role_project_scope_without_scope_id(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_project_scope_without_scope_id(rbac_service, async_session, test_user, test_role):
     """Test that Project scope without scope_id raises InvalidScopeException."""
     with pytest.raises(InvalidScopeException) as exc_info:
         await rbac_service.assign_role(
@@ -197,7 +197,7 @@ async def test_assign_role_project_scope_without_scope_id(rbac_service, async_se
 
 
 @pytest.mark.asyncio
-async def test_assign_role_project_not_found(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_project_not_found(rbac_service, async_session, test_user, test_role):
     """Test that assigning a role for a non-existent Project raises ResourceNotFoundException."""
     non_existent_project_id = uuid4()
 
@@ -239,7 +239,7 @@ async def test_assign_role_project_scope_valid(rbac_service, async_session, test
 
 
 @pytest.mark.asyncio
-async def test_assign_role_global_scope_with_scope_id(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_global_scope_with_scope_id(rbac_service, async_session, test_user, test_role):
     """Test that Global scope with scope_id raises InvalidScopeException."""
     with pytest.raises(InvalidScopeException) as exc_info:
         await rbac_service.assign_role(
@@ -278,7 +278,7 @@ async def test_assign_role_global_scope_valid(rbac_service, async_session, test_
 
 
 @pytest.mark.asyncio
-async def test_assign_role_invalid_scope_type(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_assign_role_invalid_scope_type(rbac_service, async_session, test_user, test_role):
     """Test that an invalid scope_type raises InvalidScopeException."""
     with pytest.raises(InvalidScopeException) as exc_info:
         await rbac_service.assign_role(
@@ -299,7 +299,7 @@ async def test_assign_role_invalid_scope_type(rbac_service, async_session, test_
 
 
 @pytest.mark.asyncio
-async def test_validation_error_messages_are_clear(rbac_service, async_session, test_user, test_role):  # noqa: ARG001
+async def test_validation_error_messages_are_clear(rbac_service, async_session, test_user, test_role):
     """Test that validation error messages are clear and informative."""
     # Test User not found
     non_existent_user_id = uuid4()

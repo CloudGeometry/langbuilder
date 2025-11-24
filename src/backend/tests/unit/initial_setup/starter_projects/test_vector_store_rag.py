@@ -42,7 +42,7 @@ def ingestion_graph():
         embedding_model=openai_embeddings.build_embeddings,
         ingest_data=text_splitter.split_text,
         api_endpoint="https://astra.example.com",
-        token="token",  # noqa: S106
+        token="token",
     )
     return Graph(file_component, vector_store)
 
@@ -57,7 +57,7 @@ def rag_graph():
     rag_vector_store.set(
         search_query=chat_input.message_response,
         api_endpoint="https://astra.example.com",
-        token="token",  # noqa: S106
+        token="token",
         embedding_model=openai_embeddings.build_embeddings,
     )
     # Mock search_documents

@@ -479,7 +479,7 @@ class TestFindCycleVertices:
 def test_chat_inputs_at_start():
     vertices_layers = [["ChatInput1", "B"], ["C"], ["D"]]
 
-    def get_vertex_predecessors(vertex_id: str) -> list[str]:  # noqa: ARG001
+    def get_vertex_predecessors(vertex_id: str) -> list[str]:
         return []
 
     result = utils.sort_chat_inputs_first(vertices_layers, get_vertex_predecessors)
@@ -553,7 +553,7 @@ def test_get_sorted_vertices_with_cycle():
     successor_map = {"A": ["B"], "B": ["C"], "C": ["A"]}
     predecessor_map = {"A": ["C"], "B": ["A"], "C": ["B"]}
 
-    def is_input_vertex(vertex_id: str) -> bool:  # noqa: ARG001
+    def is_input_vertex(vertex_id: str) -> bool:
         return False
 
     def get_vertex_predecessors(vertex_id: str) -> list[str]:
