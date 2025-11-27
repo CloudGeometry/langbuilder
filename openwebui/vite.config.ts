@@ -28,5 +28,26 @@ export default defineConfig({
 	},
 	esbuild: {
 		pure: process.env.ENV === 'dev' ? [] : ['console.log', 'console.debug', 'console.error']
+	},
+	server: {
+		proxy: {
+			'/api': {
+				target: 'http://localhost:8002',
+				changeOrigin: true
+			},
+			'/oauth': {
+				target: 'http://localhost:8002',
+				changeOrigin: true
+			},
+			'/ollama': {
+				target: 'http://localhost:8002',
+				changeOrigin: true
+			},
+			'/socket.io': {
+				target: 'http://localhost:8002',
+				changeOrigin: true,
+				ws: true
+			}
+		}
 	}
 });
