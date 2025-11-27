@@ -93,6 +93,10 @@ from open_webui.routers import (
     users,
     utils,
     scim,
+    google_drive,
+    zoho_people,
+    intrasearch,
+    services,
 )
 
 from open_webui.routers.retrieval import (
@@ -1316,6 +1320,18 @@ app.include_router(
     evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
 )
 app.include_router(utils.router, prefix="/api/v1/utils", tags=["utils"])
+
+# Google Drive integration
+app.include_router(google_drive.router, prefix="/api/v1/google-drive", tags=["google-drive"])
+
+# Zoho People integration
+app.include_router(zoho_people.router, prefix="/api/v1/zoho-people", tags=["zoho-people"])
+
+# IntraSearch integration
+app.include_router(intrasearch.router, prefix="/api/v1/intrasearch", tags=["intrasearch"])
+
+# Services integration (Google Drive, Zoho unified endpoints)
+app.include_router(services.router, prefix="/api/v1/services", tags=["services"])
 
 # SCIM 2.0 API for identity management
 if SCIM_ENABLED:
