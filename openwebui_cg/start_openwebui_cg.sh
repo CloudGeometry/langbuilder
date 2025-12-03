@@ -108,7 +108,13 @@ kill_port() {
 install_frontend_deps() {
     if ! check_npm_dependencies; then
         echo -e "${YELLOW}Installing npm packages...${NC}"
-        npm install --legacy-peer-deps >/dev/null 2>&1
+        if ! npm install --legacy-peer-deps; then
+            echo -e "${RED}Failed to install npm packages${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}NPM packages installed successfully${NC}"
+    else
+        echo -e "${GREEN}NPM packages already installed${NC}"
     fi
 }
 
@@ -138,8 +144,17 @@ install_backend_deps() {
     if [ -f "backend/requirements.txt" ]; then
         if ! "$VENV_PYTHON" -c "import uvicorn" 2>/dev/null; then
             echo -e "${YELLOW}Installing backend dependencies...${NC}"
-            "$VENV_PIP" install -r backend/requirements.txt >/dev/null 2>&1
+            if ! "$VENV_PIP" install -r backend/requirements.txt; then
+                echo -e "${RED}Failed to install backend dependencies${NC}"
+                exit 1
+            fi
+            echo -e "${GREEN}Backend dependencies installed successfully${NC}"
+        else
+            echo -e "${GREEN}Backend dependencies already installed${NC}"
         fi
+    else
+        echo -e "${RED}Error: backend/requirements.txt not found${NC}"
+        exit 1
     fi
 }
 

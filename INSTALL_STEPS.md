@@ -89,7 +89,7 @@ Review and update the `.env` file in the root directory with your API keys and c
 cd openwebui_cg && npm run dev -- --port 5175
 
 # Terminal 3: LangBuilder Backend
-cd langbuilder_cg && make backend port=8765
+cd langbuilder_cg && make backend port=8002
 
 # Terminal 4: LangBuilder Frontend
 cd langbuilder_cg && make frontend
@@ -99,8 +99,8 @@ cd langbuilder_cg && make frontend
 
 - **OpenWebUI Frontend**: http://localhost:5175
 - **OpenWebUI Backend**: http://localhost:8767
-- **LangBuilder Frontend**: http://localhost:8766
-- **LangBuilder Backend**: http://localhost:8765
+- **LangBuilder Frontend**: http://localhost:3000
+- **LangBuilder Backend**: http://localhost:8002
 
 ## Troubleshooting
 
@@ -111,6 +111,22 @@ If you get this error when running `make backend`:
 cd langbuilder_cg
 uv venv
 make install_backend
+```
+
+## Verifying Services
+
+Check if all ports are running:
+```bash
+# Using ss (recommended)
+ss -tlnp | grep -E ':(3000|8002|8767|5175)'
+
+# Or check each port individually
+for port in 3000:LangBuilder-Frontend 8002:LangBuilder-Backend 8767:OpenWebUI-Backend 5175:OpenWebUI-Frontend; do
+  p=$(echo $port | cut -d: -f1)
+  name=$(echo $port | cut -d: -f2)
+  echo -n "$name (port $p): "
+  ss -tlnp | grep ":$p " > /dev/null && echo "✓ Running" || echo "✗ Not running"
+done
 ```
 
 ### Error: "uv is not installed"

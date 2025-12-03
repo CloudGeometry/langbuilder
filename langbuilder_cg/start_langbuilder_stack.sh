@@ -17,11 +17,11 @@ ENV_FILE="$SCRIPT_DIR/../.env"
 
 if [ -f "$ENV_FILE" ]; then
     # Only load simple PORT variables, skip complex JSON-like entries
-    BACKEND_PORT=$(grep '^LANGBUILDER_BACKEND_PORT=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "8765")
-    FRONTEND_PORT=$(grep '^VITE_PORT=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "8766")
+    BACKEND_PORT=$(grep '^LANGBUILDER_BACKEND_PORT=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "8002")
+    FRONTEND_PORT=$(grep '^VITE_PORT=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "3000")
 else
-    BACKEND_PORT="8765"
-    FRONTEND_PORT="8766"
+    BACKEND_PORT="8002"
+    FRONTEND_PORT="3000"
 fi
 
 # Remove any whitespace

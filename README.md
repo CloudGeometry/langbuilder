@@ -120,8 +120,8 @@ The project consists of 2 main stacks that need to be started:
 **Expected URLs:**
 - OpenWebUI Frontend: http://localhost:5175
 - OpenWebUI Backend: http://localhost:8767
-- LangBuilder Frontend: http://localhost:8766
-- LangBuilder Backend: http://localhost:8765
+- LangBuilder Frontend: http://localhost:3000
+- LangBuilder Backend: http://localhost:8002
 
 ### Option B: Start OpenWebUI_CG with Automated Script
 

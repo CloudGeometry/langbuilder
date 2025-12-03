@@ -39,11 +39,16 @@ make install_frontend
 ### OPTION B - Start Services Manually:
 ```bash
 # Terminal 1: Backend
-make backend port=8765
+make backend port=8002
 
 # Terminal 2: Frontend
 make frontend
 ```
+
+## Service URLs
+
+- **LangBuilder Frontend**: http://localhost:3000
+- **LangBuilder Backend**: http://localhost:8002
 
 ## Troubleshooting
 
@@ -60,4 +65,16 @@ make install_backend
 Install uv using pipx:
 ```bash
 pipx install uv
+```
+
+## Verifying Services
+
+Check if LangBuilder ports are running:
+```bash
+# Using ss (recommended)
+ss -tlnp | grep -E ':(3000|8002)'
+
+# Or using lsof
+sudo lsof -i :8002
+sudo lsof -i :3000
 ```
