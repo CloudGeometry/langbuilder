@@ -235,21 +235,25 @@ setup_env: ## set up the environment
 
 
 
-backend: setup_env ## run the backend in development mode (Windows compatible - no reload, no workers)
+backend: setup_env ## run the backend in development mode
 	@-kill -9 $$(lsof -t -i:7860) || true
-	@echo "Ensuring PyTorch CPU is installed (Windows fix)..."
+	@if [ ! -d .venv ]; then \
+		echo "$(RED)Error: Virtual environment not found. Please run 'uv venv' first.$(NC)"; \
+		exit 1; \
+	fi
+	@echo "Ensuring PyTorch CPU is installed..."
 	@uv pip install --extra-index-url https://download.pytorch.org/whl/cpu torch==2.9.1+cpu torchvision==0.24.1+cpu
 ifdef login
-	@echo "Running backend autologin is $(login)";
-	LANGBUILDER_AUTO_LOGIN=$(login) .venv/Scripts/python.exe -m uvicorn \
+	@echo "Running backend with autologin=$(login)";
+	LANGBUILDER_AUTO_LOGIN=$(login) uv run uvicorn \
 		--factory langbuilder.main:create_app \
 		--host 0.0.0.0 \
 		--port $(port) \
 		--env-file $(env) \
 		--loop asyncio
 else
-	@echo "Running backend respecting the $(env) file";
-	.venv/Scripts/python.exe -m uvicorn \
+	@echo "Running backend with $(env) file";
+	uv run uvicorn \
 		--factory langbuilder.main:create_app \
 		--host 0.0.0.0 \
 		--port $(port) \

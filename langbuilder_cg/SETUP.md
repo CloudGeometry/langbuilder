@@ -83,12 +83,17 @@ cd ..
 ### Step 3: Install LangBuilder Dependencies
 
 ```bash
+# Create Python virtual environment with uv (REQUIRED)
+uv venv
+
 # Install backend dependencies using uv
 make install_backend
 
 # Install frontend dependencies
 make install_frontend
 ```
+
+**Important:** You must create the virtual environment with `uv venv` before running `make install_backend`. The backend commands require a virtual environment to be present in the `.venv` directory.
 
 ---
 

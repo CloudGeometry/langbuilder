@@ -33,13 +33,14 @@
 
 LangBuilder requires [Python 3.10 to 3.13](https://www.python.org/downloads/release/python-3100/) and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-1. To install LangBuilder, run:
+1. Create a virtual environment and install LangBuilder:
 
 ```shell
+uv venv
 uv pip install langbuilder -U
 ```
 
-2. To run LangBuilder, run:
+2. To run LangBuilder:
 
 ```shell
 uv run langbuilder run

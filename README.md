@@ -72,6 +72,9 @@ cd ..
 ```bash
 cd langbuilder_cg
 
+# Create Python virtual environment with uv
+uv venv
+
 # Install backend dependencies using uv
 make install_backend
 
@@ -80,6 +83,8 @@ make install_frontend
 
 cd ..
 ```
+
+**Note:** The `uv venv` command creates a Python virtual environment in the `.venv` directory. This is required before running any backend commands.
 
 ---
 
