@@ -6,15 +6,27 @@ Before you begin, ensure you have the following installed on your system:
 
 ### Required Software
 
-1. **Python 3.11+**
+1. **Python 3.11 or 3.12 (recommended)**
    - Download from [python.org](https://www.python.org/downloads/)
    - Verify installation: `python --version`
+   - **Important**: Python 3.13+ is too new and has compatibility issues. Use Python 3.12 for production deployments.
 
-2. **Node.js (18.13.0 to 22.x.x) and npm (6.0.0+)**
+2. **Node.js 20.19.0+ or 22.x.x LTS (recommended) and npm 6.0.0+**
    - Download from [nodejs.org](https://nodejs.org/)
+   - **Recommended**: Use nvm (Node Version Manager) for easier version management:
+     ```bash
+     # Install nvm
+     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+     source ~/.bashrc
+
+     # Install Node.js 22 LTS
+     nvm install 22
+     nvm use 22
+     nvm alias default 22
+     ```
    - Verify installation:
      ```bash
-     node --version
+     node --version  # Should show v22.x.x or v20.19.0+
      npm --version
      ```
 

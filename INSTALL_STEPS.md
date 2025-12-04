@@ -4,8 +4,11 @@
 
 Ensure you have the following installed:
 
-1. **Python 3.11+** - `python --version`
-2. **Node.js 18.13.0 to 22.x.x** - `node --version`
+1. **Python 3.11 or 3.12 (recommended)** - `python --version`
+   - **Note**: Python 3.13+ is too new and has compatibility issues with some dependencies. Use Python 3.12 for best compatibility.
+   - **Recommended**: Use pyenv for version management on newer Ubuntu versions (25.04+)
+2. **Node.js 20.19.0+ or 22.x.x LTS (recommended)** - `node --version`
+   - **Recommended**: Use nvm (Node Version Manager) for version management
 3. **npm 6.0.0+** - `npm --version`
 4. **uv (Python package manager)** - Install with: `pipx install uv`
 5. **Git** - For cloning the repository

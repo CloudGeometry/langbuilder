@@ -13,7 +13,7 @@ GREEN=\033[0;32m
 
 log_level ?= debug
 host ?= 0.0.0.0
-port ?= 7860
+port ?= 8002
 env ?= .env
 open_browser ?= true
 path = src/backend/base/langbuilder/frontend
