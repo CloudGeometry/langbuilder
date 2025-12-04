@@ -283,7 +283,7 @@ member_servers.json
 
 .claude
 .vscode
-langbuilder_cg/.claude
-openwebui_cg/.vscode
-langbuilder_cg/.alucify
-langbuilder_cg/.cursor
+langbuilder/.claude
+openwebui/.vscode
+langbuilder/.alucify
+langbuilder/.cursor

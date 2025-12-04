@@ -67,48 +67,48 @@ else
 fi
 
 # Check 5: OpenWebUI virtual environment
-if [ -d "openwebui_cg/.venv" ] && [ -f "openwebui_cg/.venv/bin/python" ]; then
+if [ -d "openwebui/.venv" ] && [ -f "openwebui/.venv/bin/python" ]; then
     echo -e "  ${GREEN}✓${NC} OpenWebUI virtual environment exists"
 else
     echo -e "  ${YELLOW}⚠${NC} OpenWebUI virtual environment missing (will be created)"
 fi
 
 # Check 6: LangBuilder virtual environment
-if [ -d "langbuilder_cg/.venv" ]; then
+if [ -d "langbuilder/.venv" ]; then
     echo -e "  ${GREEN}✓${NC} LangBuilder virtual environment exists"
 else
     echo -e "  ${RED}✗${NC} LangBuilder virtual environment missing"
-    echo -e "    ${YELLOW}→ Run: cd langbuilder_cg && uv venv${NC}"
+    echo -e "    ${YELLOW}→ Run: cd langbuilder && uv venv${NC}"
     PREFLIGHT_PASSED=false
 fi
 
 # Check 7: OpenWebUI node_modules
-if [ -d "openwebui_cg/node_modules" ]; then
+if [ -d "openwebui/node_modules" ]; then
     echo -e "  ${GREEN}✓${NC} OpenWebUI npm packages installed"
 else
     echo -e "  ${YELLOW}⚠${NC} OpenWebUI npm packages missing (will be installed)"
 fi
 
 # Check 8: y-protocols specifically (common missing dependency)
-if [ -d "openwebui_cg/node_modules/y-protocols" ]; then
+if [ -d "openwebui/node_modules/y-protocols" ]; then
     echo -e "  ${GREEN}✓${NC} y-protocols package installed"
 else
     echo -e "  ${YELLOW}⚠${NC} y-protocols missing (will be installed)"
 fi
 
 # Check 9: LangBuilder local .env with VITE_PROXY_TARGET
-if [ -f "langbuilder_cg/.env" ] && grep -q "VITE_PROXY_TARGET" "langbuilder_cg/.env" 2>/dev/null; then
+if [ -f "langbuilder/.env" ] && grep -q "VITE_PROXY_TARGET" "langbuilder/.env" 2>/dev/null; then
     echo -e "  ${GREEN}✓${NC} LangBuilder .env configured"
 else
     echo -e "  ${YELLOW}⚠${NC} LangBuilder .env missing VITE_PROXY_TARGET (will be created)"
 fi
 
 # Check 10: OpenWebUI backend WEBUI_NAME fix
-if grep -q "^WEBUI_NAME" "openwebui_cg/backend/open_webui/env.py" 2>/dev/null; then
+if grep -q "^WEBUI_NAME" "openwebui/backend/open_webui/env.py" 2>/dev/null; then
     echo -e "  ${GREEN}✓${NC} OpenWebUI WEBUI_NAME export configured"
 else
     echo -e "  ${RED}✗${NC} OpenWebUI env.py missing WEBUI_NAME export"
-    echo -e "    ${YELLOW}→ Add to openwebui_cg/backend/open_webui/env.py:${NC}"
+    echo -e "    ${YELLOW}→ Add to openwebui/backend/open_webui/env.py:${NC}"
     echo -e "    ${YELLOW}   WEBUI_NAME = os.environ.get(\"WEBUI_NAME\", \"Open WebUI\")${NC}"
     PREFLIGHT_PASSED=false
 fi
@@ -138,7 +138,7 @@ echo ""
 
 # Start OpenWebUI_CG
 echo -e "${GREEN}Starting OpenWebUI_CG...${NC}"
-cd openwebui_cg
+cd openwebui
 ./start_openwebui_macos.sh &
 OPENWEBUI_PID=$!
 cd ..
@@ -148,7 +148,7 @@ sleep 8
 
 # Start LangBuilder_CG
 echo -e "${GREEN}Starting LangBuilder_CG...${NC}"
-cd langbuilder_cg
+cd langbuilder
 ./start_langbuilder_macos.sh &
 LANGBUILDER_PID=$!
 cd ..

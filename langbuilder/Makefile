@@ -236,7 +236,14 @@ setup_env: ## set up the environment
 
 
 backend: setup_env ## run the backend in development mode
-	@-kill -9 $$(lsof -t -i:7860) || true
+	@# Cross-platform port killing
+	@if command -v lsof >/dev/null 2>&1; then \
+		kill -9 $$(lsof -t -i:$(port)) 2>/dev/null || true; \
+	elif command -v netstat >/dev/null 2>&1; then \
+		for pid in $$(netstat -ano 2>/dev/null | grep ":$(port) " | grep "LISTENING" | awk '{print $$5}' | sort -u); do \
+			taskkill //F //PID $$pid 2>/dev/null || true; \
+		done; \
+	fi
 	@if [ ! -d .venv ]; then \
 		echo "$(RED)Error: Virtual environment not found. Please run 'uv venv' first.$(NC)"; \
 		exit 1; \

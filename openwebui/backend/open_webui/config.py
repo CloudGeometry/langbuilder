@@ -797,27 +797,31 @@ load_oauth_providers()
 
 STATIC_DIR = Path(os.getenv("STATIC_DIR", OPEN_WEBUI_DIR / "static")).resolve()
 
-try:
-    if STATIC_DIR.exists():
-        for item in STATIC_DIR.iterdir():
-            if item.is_file() or item.is_symlink():
-                try:
-                    item.unlink()
-                except Exception as e:
-                    pass
-except Exception as e:
-    pass
+# Only clean and copy static files if frontend build directory exists
+if (FRONTEND_BUILD_DIR / "static").exists():
+    try:
+        if STATIC_DIR.exists():
+            for item in STATIC_DIR.iterdir():
+                if item.is_file() or item.is_symlink():
+                    try:
+                        item.unlink()
+                    except Exception as e:
+                        pass
+    except Exception as e:
+        pass
 
-for file_path in (FRONTEND_BUILD_DIR / "static").glob("**/*"):
-    if file_path.is_file():
-        target_path = STATIC_DIR / file_path.relative_to(
-            (FRONTEND_BUILD_DIR / "static")
-        )
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            shutil.copyfile(file_path, target_path)
-        except Exception as e:
-            logging.error(f"An error occurred: {e}")
+    for file_path in (FRONTEND_BUILD_DIR / "static").glob("**/*"):
+        if file_path.is_file():
+            target_path = STATIC_DIR / file_path.relative_to(
+                (FRONTEND_BUILD_DIR / "static")
+            )
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.copyfile(file_path, target_path)
+            except Exception as e:
+                logging.error(f"An error occurred: {e}")
+else:
+    log.info("Frontend build directory not found, using existing static files")
 
 frontend_favicon = FRONTEND_BUILD_DIR / "static" / "favicon.png"
 

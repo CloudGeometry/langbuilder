@@ -58,8 +58,8 @@ Before you begin, ensure you have the following installed on your system:
 ### Step 2: Set Up Python Virtual Environment for OpenWebUI
 
 ```bash
-# Navigate to openwebui_cg directory
-cd openwebui_cg
+# Navigate to openwebui directory
+cd openwebui
 
 # Create virtual environment
 python -m venv .venv
@@ -117,7 +117,7 @@ The project consists of 3 services that need to be started:
 ### Option A: Start OpenWebUI_CG with Automated Script (Recommended)
 
 ```bash
-./openwebui_cg/start_openwebui_cg.sh
+./openwebui/start_openwebui.sh
 ```
 
 **What it does:**
@@ -150,7 +150,7 @@ Frontend started (PID: YYYY)
 **Terminal 1: OpenWebUI Backend**
 
 ```bash
-./openwebui_cg/backend/start_openwebui_simple.sh
+./openwebui/backend/start_openwebui_simple.sh
 ```
 
 - Starts the OpenWebUI backend API
@@ -160,7 +160,7 @@ Frontend started (PID: YYYY)
 **Terminal 2: OpenWebUI Frontend**
 
 ```bash
-cd openwebui_cg
+cd openwebui
 npm run dev -- --port 5175
 ```
 

@@ -50,7 +50,14 @@ build_frontend: ## build the frontend static files
 ######################
 
 run_frontend: ## run the frontend
-	@-kill -9 `lsof -t -i:3000`
+	@# Cross-platform port killing for port 3000
+	@if command -v lsof >/dev/null 2>&1; then \
+		kill -9 $$(lsof -t -i:3000) 2>/dev/null || true; \
+	elif command -v netstat >/dev/null 2>&1; then \
+		for pid in $$(netstat -ano 2>/dev/null | grep ":3000 " | grep "LISTENING" | awk '{print $$5}' | sort -u); do \
+			taskkill //F //PID $$pid 2>/dev/null || true; \
+		done; \
+	fi
 	@cd $(FRONTEND_DIR) && npm start $(if $(FRONTEND_START_FLAGS),-- $(FRONTEND_START_FLAGS))
 
 frontend: install_frontend ## run the frontend in development mode

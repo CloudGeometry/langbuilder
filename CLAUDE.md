@@ -11,7 +11,7 @@ LangBuilder Platform by Cloud Geometry - A dual-stack application combining:
 ## Architecture
 
 ```
-├── langbuilder_cg/          # LangBuilder stack
+├── langbuilder/          # LangBuilder stack
 │   ├── src/backend/         # FastAPI backend (Python)
 │   │   ├── base/langbuilder/
 │   │   │   ├── components/  # Flow components (agents, models, tools, vectorstores, etc.)
@@ -20,7 +20,7 @@ LangBuilder Platform by Cloud Geometry - A dual-stack application combining:
 │   │   └── tests/           # Backend tests
 │   └── src/frontend/        # React/TypeScript frontend (Vite, Tailwind, Zustand, React Flow)
 │
-└── openwebui_cg/            # OpenWebUI stack
+└── openwebui/            # OpenWebUI stack
     ├── backend/             # FastAPI backend
     └── (frontend at root)   # SvelteKit frontend
 ```
@@ -39,11 +39,11 @@ LangBuilder Platform by Cloud Geometry - A dual-stack application combining:
 ### Quick Start
 ```bash
 ./start_all.sh                           # Start everything
-./openwebui_cg/start_openwebui_cg.sh     # Start OpenWebUI only
-./langbuilder_cg/start_langbuilder_stack.sh  # Start LangBuilder only
+./openwebui/start_openwebui.sh     # Start OpenWebUI only
+./langbuilder/start_langbuilder_stack.sh  # Start LangBuilder only
 ```
 
-### LangBuilder Commands (run from langbuilder_cg/)
+### LangBuilder Commands (run from langbuilder/)
 ```bash
 # Setup
 uv venv                    # Create Python virtual environment (required first)
@@ -76,7 +76,7 @@ make alembic-upgrade
 make alembic-current
 ```
 
-### OpenWebUI Commands (run from openwebui_cg/)
+### OpenWebUI Commands (run from openwebui/)
 ```bash
 make install               # Start with docker-compose
 make start                 # Start services

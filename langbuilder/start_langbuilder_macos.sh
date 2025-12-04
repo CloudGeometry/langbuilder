@@ -51,7 +51,7 @@ if [ ! -d .venv ]; then
 fi
 
 # Ensure local .env file exists with VITE_PROXY_TARGET
-# This is critical - vite.config.mts reads from langbuilder_cg/.env, NOT the root .env
+# This is critical - vite.config.mts reads from langbuilder/.env, NOT the root .env
 LOCAL_ENV_FILE="$SCRIPT_DIR/.env"
 if [ ! -f "$LOCAL_ENV_FILE" ] || ! grep -q "VITE_PROXY_TARGET" "$LOCAL_ENV_FILE" 2>/dev/null; then
     echo -e "${YELLOW}Creating local .env with VITE_PROXY_TARGET...${NC}"

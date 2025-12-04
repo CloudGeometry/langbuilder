@@ -22,7 +22,7 @@ cd LangBuilder
 ### 2. Set Up OpenWebUI_CG
 
 ```bash
-cd openwebui_cg
+cd openwebui
 
 # Create virtual environment
 python -m venv .venv
@@ -45,7 +45,7 @@ cd ..
 ### 3. Set Up LangBuilder_CG
 
 ```bash
-cd langbuilder_cg
+cd langbuilder
 
 # Create Python virtual environment with uv (REQUIRED)
 uv venv
@@ -58,6 +58,11 @@ make install_frontend
 
 cd ..
 ```
+
+**Important Notes:**
+- On **Windows**: Use Git Bash or WSL to run these commands
+- The scripts are **cross-platform** and work on Windows, Linux, and macOS
+- If `uv venv` fails on Windows, remove `.venv` manually first: `rm -rf .venv`
 
 ### 4. Configure Environment Variables
 
@@ -72,27 +77,27 @@ Review and update the `.env` file in the root directory with your API keys and c
 
 ### OPTION B - Start OpenWebUI_CG Only:
 ```bash
-./openwebui_cg/start_openwebui_cg.sh
+./openwebui/start_openwebui.sh
 ```
 
 ### OPTION C - Start LangBuilder_CG Only:
 ```bash
-./langbuilder_cg/start_langbuilder_stack.sh
+./langbuilder/start_langbuilder_stack.sh
 ```
 
 ### OPTION D - Start Services Manually:
 ```bash
 # Terminal 1: OpenWebUI Backend
-./openwebui_cg/backend/start_openwebui_simple.sh
+./openwebui/backend/start_openwebui_simple.sh
 
 # Terminal 2: OpenWebUI Frontend
-cd openwebui_cg && npm run dev -- --port 5175
+cd openwebui && npm run dev -- --port 5175
 
 # Terminal 3: LangBuilder Backend
-cd langbuilder_cg && make backend port=8002
+cd langbuilder && make backend port=8002
 
 # Terminal 4: LangBuilder Frontend
-cd langbuilder_cg && make frontend
+cd langbuilder && make frontend
 ```
 
 ## Service URLs
@@ -102,13 +107,72 @@ cd langbuilder_cg && make frontend
 - **LangBuilder Frontend**: http://localhost:3000
 - **LangBuilder Backend**: http://localhost:8002
 
+---
+
+## Connecting OpenWebUI with LangBuilder
+
+After everything is working correctly, you need to connect OpenWebUI with LangBuilder to use LangBuilder workflows as AI providers.
+
+### Step 1: Generate an API Key in LangBuilder
+
+1. Open LangBuilder Frontend: http://localhost:3000
+2. Navigate to **Settings** or **API Keys** section
+3. Click **Generate New API Key** or **Create API Key**
+4. Copy the generated API key (save it securely, you'll need it in the next step)
+
+### Step 2: Configure LangBuilder as OpenAI Provider in OpenWebUI
+
+1. Open OpenWebUI Frontend: http://localhost:5175
+2. Click on your **username** at the **bottom left** corner
+3. Select **Admin Panel**
+4. Navigate to **Settings** → **Connections**
+5. Find **Manage OpenAI API Connections** section
+6. Click **Add Connection**
+7. Fill in the connection details:
+   - **Name**: `LangBuilder` (or any name you prefer)
+   - **API Base URL**: `http://localhost:8002/v1`
+   - **API Key**: Paste the API key you generated in Step 1
+8. Click **Save** or **Add Connection**
+
+### Step 3: Verify the Connection
+
+1. Go back to the main OpenWebUI chat interface
+2. Start a new conversation
+3. Select the **LangBuilder** provider from the model dropdown
+4. Send a test message to verify the connection is working
+
+**Note:** Make sure both LangBuilder backend (port 8002) and OpenWebUI (port 5175) are running before attempting to connect them.
+
+---
+
 ## Troubleshooting
 
 ### Error: "No virtual environment found"
 
 If you get this error when running `make backend`:
 ```bash
-cd langbuilder_cg
+cd langbuilder
+uv venv
+make install_backend
+```
+
+### Error: "Función incorrecta" or "Failed to create virtual environment" (Windows)
+
+On Windows, if `uv venv` fails to replace an existing virtual environment:
+```bash
+cd langbuilder
+# Remove the old virtual environment
+rm -rf .venv
+# Create a new one
+uv venv
+make install_backend
+```
+
+### Error: "ModuleNotFoundError: No module named 'langbuilder'"
+
+This means the backend dependencies are not installed:
+```bash
+cd langbuilder
 uv venv
 make install_backend
 ```

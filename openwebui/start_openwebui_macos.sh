@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# OpenWebUI_CG Stack Startup Script - macOS Version
+# OpenWebUI Stack Startup Script - macOS Version
 set -e
 
 # Colors
@@ -15,7 +15,7 @@ BACKEND_PORT="${OPEN_WEBUI_PORT:-8767}"
 FRONTEND_PORT="5175"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo -e "${GREEN}Starting OpenWebUI_CG (macOS)...${NC}"
+echo -e "${GREEN}Starting OpenWebUI (macOS)...${NC}"
 
 # Change to script directory
 cd "$SCRIPT_DIR"
@@ -153,7 +153,7 @@ main() {
     # Display status
     echo ""
     echo -e "${GREEN}========================================${NC}"
-    echo -e "${GREEN}✓ OpenWebUI_CG Stack Running (macOS)!${NC}"
+    echo -e "${GREEN}✓ OpenWebUI Stack Running (macOS)!${NC}"
     echo -e "${GREEN}========================================${NC}"
     echo -e "${BLUE}Backend:  PID $BACKEND_PID${NC}"
     echo -e "${BLUE}Frontend: PID $FRONTEND_PID${NC}"

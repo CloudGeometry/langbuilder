@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# OpenWebUI_CG Stack Startup Script
+# OpenWebUI Stack Startup Script
 # Compatible with Linux (production) and Windows/Git Bash (development)
 set -e
 
@@ -28,7 +28,7 @@ detect_os() {
 
 OS_TYPE=$(detect_os)
 
-echo -e "${GREEN}Starting OpenWebUI_CG...${NC}"
+echo -e "${GREEN}Starting OpenWebUI...${NC}"
 
 # Change to script directory
 cd "$SCRIPT_DIR"
@@ -190,7 +190,7 @@ main() {
     # Display status
     echo ""
     echo -e "${GREEN}========================================${NC}"
-    echo -e "${GREEN}✓ OpenWebUI_CG Stack Running!${NC}"
+    echo -e "${GREEN}✓ OpenWebUI Stack Running!${NC}"
     echo -e "${GREEN}========================================${NC}"
     echo -e "${BLUE}Backend:  PID $BACKEND_PID${NC}"
     echo -e "${BLUE}Frontend: PID $FRONTEND_PID${NC}"

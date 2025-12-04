@@ -12,8 +12,8 @@
 ### 1. Create Virtual Environment (REQUIRED)
 
 ```bash
-# Navigate to langbuilder_cg directory
-cd langbuilder_cg
+# Navigate to langbuilder directory
+cd langbuilder
 
 # Create Python virtual environment with uv
 uv venv

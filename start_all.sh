@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # LangBuilder + OpenWebUI Complete Stack Startup
-# This script starts both OpenWebUI_CG and LangBuilder_CG
+# This script starts both OpenWebUI and LangBuilder
 
 set -e
 
@@ -15,24 +15,24 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}   Complete Stack Startup${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo -e "${BLUE}Starting:${NC}"
-echo -e "  • OpenWebUI_CG (Backend: 8767, Frontend: 5175)"
-echo -e "  • LangBuilder_CG (Backend: 8002, Frontend: 3000)"
+echo -e "  • OpenWebUI (Backend: 8767, Frontend: 5175)"
+echo -e "  • LangBuilder (Backend: 8002, Frontend: 3000)"
 echo ""
 
 # Change to script directory
 cd "$(dirname "$0")"
 
-# Start OpenWebUI_CG
-cd openwebui_cg
-./start_openwebui_cg.sh &
+# Start OpenWebUI
+cd openwebui
+./start_openwebui.sh &
 OPENWEBUI_PID=$!
 cd ..
 
 echo -e "${YELLOW}Waiting 8 seconds for OpenWebUI to initialize...${NC}"
 sleep 8
 
-# Start LangBuilder_CG
-cd langbuilder_cg
+# Start LangBuilder
+cd langbuilder
 ./start_langbuilder_stack.sh &
 LANGBUILDER_PID=$!
 cd ..
@@ -41,11 +41,11 @@ echo ""
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}✓ Complete Stack Started!${NC}"
 echo -e "${GREEN}========================================${NC}"
-echo -e "${BLUE}OpenWebUI_CG:${NC}"
+echo -e "${BLUE}OpenWebUI:${NC}"
 echo -e "  Frontend: ${GREEN}http://localhost:5175${NC}"
 echo -e "  Backend:  ${GREEN}http://localhost:8767${NC}"
 echo ""
-echo -e "${BLUE}LangBuilder_CG:${NC}"
+echo -e "${BLUE}LangBuilder:${NC}"
 echo -e "  Frontend: ${GREEN}http://localhost:3000${NC}"
 echo -e "  Backend:  ${GREEN}http://localhost:8002${NC}"
 echo ""

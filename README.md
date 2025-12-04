@@ -45,8 +45,8 @@ Before you begin, ensure you have the following installed on your system:
 ### Step 2: Set Up Python Virtual Environment for OpenWebUI
 
 ```bash
-# Navigate to openwebui_cg directory
-cd openwebui_cg
+# Navigate to openwebui directory
+cd openwebui
 
 # Create virtual environment
 python -m venv .venv
@@ -70,7 +70,7 @@ cd ..
 ### Step 3: Install LangBuilder Dependencies
 
 ```bash
-cd langbuilder_cg
+cd langbuilder
 
 # Create Python virtual environment with uv
 uv venv
@@ -126,7 +126,7 @@ The project consists of 2 main stacks that need to be started:
 ### Option B: Start OpenWebUI_CG with Automated Script
 
 ```bash
-./openwebui_cg/start_openwebui_cg.sh
+./openwebui/start_openwebui.sh
 ```
 
 **What it does:**
@@ -141,7 +141,7 @@ The project consists of 2 main stacks that need to be started:
 **Terminal 1: OpenWebUI Backend**
 
 ```bash
-./openwebui_cg/backend/start_openwebui_simple.sh
+./openwebui/backend/start_openwebui_simple.sh
 ```
 
 - Starts the OpenWebUI backend API
@@ -151,7 +151,7 @@ The project consists of 2 main stacks that need to be started:
 **Terminal 2: OpenWebUI Frontend**
 
 ```bash
-cd openwebui_cg
+cd openwebui
 npm run dev -- --port 5175
 ```
 
@@ -162,7 +162,7 @@ npm run dev -- --port 5175
 ### Terminal 2 (or 3 if using Option B): LangBuilder Stack
 
 ```bash
-./langbuilder_cg/start_langbuilder_stack.sh
+./langbuilder/start_langbuilder_stack.sh
 ```
 
 **What it does:**
@@ -218,3 +218,45 @@ netstat -ano | findstr :8002
 ### 3. Check Logs
 
 Look for error messages in each terminal window. All services should show they're running without errors.
+
+---
+
+## Connecting OpenWebUI with LangBuilder
+
+After verifying all services are running correctly, you need to connect OpenWebUI with LangBuilder to use LangBuilder workflows as AI providers in your chat interface.
+
+### Step 1: Generate an API Key in LangBuilder
+
+1. Open LangBuilder Frontend: http://localhost:3000
+2. Navigate to **Settings** or **API Keys** section
+3. Click **Generate New API Key** or **Create API Key**
+4. Copy the generated API key (save it securely, you'll need it in the next step)
+
+### Step 2: Configure LangBuilder as OpenAI Provider in OpenWebUI
+
+1. Open OpenWebUI Frontend: http://localhost:5175
+2. Click on your **username** at the **bottom left** corner
+3. Select **Admin Panel**
+4. Navigate to **Settings** → **Connections**
+5. Find **Manage OpenAI API Connections** section
+6. Click **Add Connection**
+7. Fill in the connection details:
+   - **Name**: `LangBuilder` (or any name you prefer)
+   - **API Base URL**: `http://localhost:8002/v1`
+   - **API Key**: Paste the API key you generated in Step 1
+8. Click **Save** or **Add Connection**
+
+### Step 3: Verify the Connection
+
+1. Go back to the main OpenWebUI chat interface
+2. Start a new conversation
+3. Select the **LangBuilder** provider from the model dropdown
+4. Send a test message to verify the connection is working
+
+**Note:** Make sure both LangBuilder backend (port 8002) and OpenWebUI (port 5175) are running before attempting to connect them.
+
+---
+
+## Troubleshooting
+
+For detailed troubleshooting steps, see [INSTALL_STEPS.md](INSTALL_STEPS.md#troubleshooting).
