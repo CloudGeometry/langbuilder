@@ -48,7 +48,7 @@
 			await config.set(await getBackendConfig());
 
 			if (!redirectPath) {
-				redirectPath = $page.url.searchParams.get('redirectPath') || '/';
+				redirectPath = $page.url.searchParams.get('redirect') || '/';
 			}
 
 			goto(redirectPath);
@@ -210,7 +210,7 @@
 				{#if ($config?.features.auth_trusted_header ?? false) || $config?.features.auth === false}
 					<div class=" my-auto pb-10 w-full sm:max-w-md">
 						<div
-							class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-semibold dark:text-gray-200"
+							class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-medium dark:text-gray-200"
 						>
 							<div>
 								{$i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: $WEBUI_NAME })}
@@ -229,7 +229,7 @@
 									<img
 										id="logo"
 										crossorigin="anonymous"
-										src="favicon.png"
+										src="{WEBUI_BASE_URL}/static/favicon.png"
 										class="size-24 rounded-full"
 										alt=""
 									/>
@@ -523,6 +523,16 @@
 											>
 										</button>
 									{/if}
+									{#if $config?.oauth?.providers?.feishu}
+										<button
+											class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
+											on:click={() => {
+												window.location.href = `${WEBUI_BASE_URL}/oauth/feishu/login`;
+											}}
+										>
+											<span>{$i18n.t('Continue with {{provider}}', { provider: 'Feishu' })}</span>
+										</button>
+									{/if}
 								</div>
 							{/if}
 
@@ -565,7 +575,7 @@
 						<img
 							id="logo"
 							crossorigin="anonymous"
-							src="favicon.png"
+							src="{WEBUI_BASE_URL}/static/favicon.png"
 							class=" w-6 rounded-full"
 							alt=""
 						/>
