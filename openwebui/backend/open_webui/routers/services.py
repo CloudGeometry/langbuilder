@@ -539,16 +539,24 @@ async def get_service_token(service_id: str, user=Depends(get_verified_user)):
 @router.get("/configured")
 async def get_configured_services_endpoint():
     """Get list of services that have OAuth credentials configured"""
+    from open_webui.utils.oauth_services import SERVICE_CONFIGS
+    
     configured = get_configured_services()
 
     services_info = {}
-    for service_id in configured:
-        config = get_service_config(service_id)
-        if config:
-            services_info[service_id] = {
-                "name": config.name,
-                "scopes": config.scopes
-            }
+#    for service_id in configured:
+#        config = get_service_config(service_id)
+#        if config:
+#            services_info[service_id] = {
+#                "name": config.name,
+#                "scopes": config.scopes
+#            }
+# Return all services regardless of configuration status (for demo)
+    for service_id, config in SERVICE_CONFIGS.items():
+        services_info[service_id] = {
+            "name": config.name,
+            "scopes": config.scopes
+        }
 
     return services_info
 

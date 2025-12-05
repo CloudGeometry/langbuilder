@@ -1,3 +1,6 @@
+# Backup folder (old structure before consolidation)
+_backup_old_structure/
+
 # This is to avoid Opencommit hook from getting pushed
 prepare-commit-msg
 # Logs
@@ -134,7 +137,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -260,8 +262,6 @@ langbuilder.db
 .docusaurus/
 
 /tmp/*
-src/backend/langbuilder/frontend/
-src/backend/base/langbuilder/frontend/
 .docker
 scratchpad*
 chroma*/*
@@ -280,3 +280,10 @@ src/frontend/temp
 *.mcp.json
 
 member_servers.json
+
+.claude
+.vscode
+langbuilder/.claude
+openwebui/.vscode
+langbuilder/.alucify
+langbuilder/.cursor
