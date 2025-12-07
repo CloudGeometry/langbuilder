@@ -5,7 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import pool, text
 from sqlalchemy.event import listen
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from langbuilder.services.database.service import SQLModel
 
@@ -91,11 +91,10 @@ def _do_run_migrations(connection):
 
 
 async def _run_async_migrations() -> None:
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    # Use get_main_option to respect command-line overrides (-x sqlalchemy.url=...)
+    # and programmatic overrides (config.set_main_option)
+    url = config.get_main_option("sqlalchemy.url")
+    connectable = create_async_engine(url, poolclass=pool.NullPool)
 
     if connectable.dialect.name == "sqlite":
         # See https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#serializable-isolation-savepoints-transactional-ddl
