@@ -1,0 +1,163 @@
+# Development Docker Compose Configuration
+# This setup provides a complete development environment with hot-reload for all services
+
+services:
+  # PostgreSQL Database for LangBuilder
+  postgres:
+    image: postgres:16-alpine
+    container_name: langbuilder-postgres-dev
+    environment:
+      POSTGRES_USER: langbuilder
+      POSTGRES_PASSWORD: langbuilder
+      POSTGRES_DB: langbuilder
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langbuilder"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - langbuilder-network
+
+  # LangBuilder Backend (Python + FastAPI)
+  langbuilder-backend:
+    build:
+      context: ./langbuilder
+      dockerfile: Dockerfile.dev
+    container_name: langbuilder-backend-dev
+    ports:
+      - "8002:8002"
+    environment:
+      - LANGBUILDER_DATABASE_URL=postgresql://langbuilder:langbuilder@postgres:5432/langbuilder
+      - LANGBUILDER_HOST=0.0.0.0
+      - LANGBUILDER_PORT=8002
+      - LOG_LEVEL=debug
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env.docker
+    volumes:
+      # Mount entire langbuilder directory for hot-reload (matching Makefile behavior)
+      - ./langbuilder:/app
+      # Use named volume for venv to persist dependencies and improve performance
+      - langbuilder-venv:/app/.venv
+      # Prevent frontend node_modules from being overwritten
+      - /app/src/frontend/node_modules
+      # Exclude Python cache
+      - /app/.mypy_cache
+      - /app/.pytest_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - langbuilder-network
+    restart: unless-stopped
+
+  # LangBuilder Frontend (Node.js + React + Vite)
+  langbuilder-frontend:
+    build:
+      context: ./langbuilder/src/frontend
+      dockerfile: Dockerfile.dev
+    container_name: langbuilder-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VITE_PORT=3000
+      - VITE_PROXY_TARGET=http://langbuilder-backend:8002
+      # Add WDS_SOCKET_PORT for proper HMR in Docker
+      - WDS_SOCKET_PORT=3000
+    volumes:
+      # Mount source code for hot-reload (matching Makefile behavior)
+      - ./langbuilder/src/frontend:/app
+      # Use named volume for node_modules to persist and improve performance
+      - langbuilder-frontend-node-modules:/app/node_modules
+      # Mount build output if needed
+      - ./langbuilder/src/frontend/build:/app/build
+    depends_on:
+      - langbuilder-backend
+    networks:
+      - langbuilder-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  # OpenWebUI Backend (Python + FastAPI)
+  openwebui-backend:
+    build:
+      context: ./openwebui
+      dockerfile: Dockerfile.dev
+    container_name: openwebui-backend-dev
+    ports:
+      - "8767:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - ENV=dev
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:-dev-secret-key-change-in-production}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - SCARF_NO_ANALYTICS=true
+      - DO_NOT_TRACK=true
+      - ANONYMIZED_TELEMETRY=false
+      - PYTHONUNBUFFERED=1
+      - CORS_ALLOW_ORIGIN=http://localhost:5175;http://localhost:8002;http://localhost:3000
+    env_file:
+      - .env.docker
+    volumes:
+      # Mount backend source code for hot-reload
+      - ./openwebui/backend:/app/backend
+      # Persistent volume for data
+      - openwebui-data:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - langbuilder-network
+    restart: unless-stopped
+
+  # OpenWebUI Frontend (Node.js + Svelte)
+  openwebui-frontend:
+    build:
+      context: ./openwebui
+      dockerfile: Dockerfile.frontend.dev
+    container_name: openwebui-frontend-dev
+    ports:
+      - "5175:5175"
+    environment:
+      - NODE_ENV=development
+      - PUBLIC_API_BASE_URL=http://localhost:8767
+    volumes:
+      # Mount source code for hot-reload
+      - ./openwebui/src:/app/src
+      - ./openwebui/static:/app/static
+      - ./openwebui/package.json:/app/package.json
+      - ./openwebui/svelte.config.js:/app/svelte.config.js
+      - ./openwebui/vite.config.ts:/app/vite.config.ts
+      - ./openwebui/tsconfig.json:/app/tsconfig.json
+      - ./openwebui/tailwind.config.js:/app/tailwind.config.js
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    depends_on:
+      - openwebui-backend
+    networks:
+      - langbuilder-network
+    restart: unless-stopped
+
+# Networks
+networks:
+  langbuilder-network:
+    driver: bridge
+
+# Volumes for persistent data
+volumes:
+  postgres-data:
+    name: langbuilder-postgres-dev-data
+  langbuilder-venv:
+    name: langbuilder-venv-dev
+  langbuilder-frontend-node-modules:
+    name: langbuilder-frontend-node-modules-dev
+  openwebui-data:
+    name: openwebui-dev-data

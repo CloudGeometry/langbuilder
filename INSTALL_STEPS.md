@@ -133,9 +133,18 @@ After everything is working correctly, you need to connect OpenWebUI with LangBu
 6. Click **Add Connection**
 7. Fill in the connection details:
    - **Name**: `LangBuilder` (or any name you prefer)
-   - **API Base URL**: `http://localhost:8002/v1`
+   - **API Base URL**: See table below depending on your setup
    - **API Key**: Paste the API key you generated in Step 1
 8. Click **Save** or **Add Connection**
+
+#### API Base URL Configuration
+
+| Setup Type | API Base URL |
+|------------|--------------|
+| **Docker** (using `./start-docker-dev.sh`) | `http://langbuilder-backend:8002/v1` |
+| **Local/Manual** (using `./start_all.sh` or manual) | `http://localhost:8002/v1` |
+
+> **Important:** When running with Docker, containers communicate through an internal network. Using `localhost` inside a container refers to the container itself, not your host machine. Use the Docker service name `langbuilder-backend` instead.
 
 ### Step 3: Verify the Connection
 

@@ -287,3 +287,8 @@ langbuilder/.claude
 openwebui/.vscode
 langbuilder/.alucify
 langbuilder/.cursor
+# Docker environment (contains secrets)
+.env.docker
+
+# Vite cache
+.vite/
