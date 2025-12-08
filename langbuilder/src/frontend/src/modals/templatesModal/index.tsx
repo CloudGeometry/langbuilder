@@ -55,6 +55,12 @@ export default function TemplatesModal({
         { title: "Agents", icon: "Bot", id: "agents" },
       ],
     },
+    {
+      title: "CloudGeometry Flows",
+      items: [
+        { title: "All CloudGeometry Flows", icon: "Workflow", id: "cloudgeometry-flows" },
+      ],
+    },
   ];
 
   return (
