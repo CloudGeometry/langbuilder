@@ -3,8 +3,11 @@ import { browser, dev } from '$app/environment';
 
 export const APP_NAME = 'ActionBridge';
 
-export const WEBUI_HOSTNAME = browser ? (dev ? `${location.hostname}:8767` : ``) : '';
-export const WEBUI_BASE_URL = browser ? (dev ? `http://${WEBUI_HOSTNAME}` : ``) : ``;
+// Backend IP for dev environment
+const DEV_BACKEND_IP = 'ec2-34-224-7-3.compute-1.amazonaws.com'; // Tu IP de instancia aquí
+
+export const WEBUI_HOSTNAME = browser ? (dev ? `${DEV_BACKEND_IP}:8767` : location.host) : '';
+export const WEBUI_BASE_URL = browser ? (dev ? `http://${WEBUI_HOSTNAME}` : `${location.protocol}//${location.host}`) : ``;
 export const WEBUI_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1`;
 
 export const OLLAMA_API_BASE_URL = `${WEBUI_BASE_URL}/ollama`;
@@ -12,6 +15,10 @@ export const OPENAI_API_BASE_URL = `${WEBUI_BASE_URL}/openai`;
 export const AUDIO_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1/audio`;
 export const IMAGES_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1/images`;
 export const RETRIEVAL_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1/retrieval`;
+
+// These are defined in vite.config.ts via defineConfig.define
+declare const APP_VERSION: string;
+declare const APP_BUILD_HASH: string;
 
 export const WEBUI_VERSION = APP_VERSION;
 export const WEBUI_BUILD_HASH = APP_BUILD_HASH;
