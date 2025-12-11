@@ -212,12 +212,13 @@
 	};
 
 	const onSelect = async (e) => {
-		const { type, data } = e;
+		const { type, data, autoSubmit } = e;
 
 		if (type === 'prompt') {
 			// Handle prompt selection
 			messageInput?.setText(data, async () => {
-				if (!($settings?.insertSuggestionPrompt ?? false)) {
+				// Auto-submit if explicitly requested OR if insertSuggestionPrompt is disabled
+				if (autoSubmit || !($settings?.insertSuggestionPrompt ?? false)) {
 					await tick();
 					submitPrompt(prompt);
 				}
@@ -2556,7 +2557,7 @@
 							<div class="flex items-center h-full">
 								<Placeholder
 									{history}
-									{selectedModels}
+									bind:selectedModels
 									bind:messageInput
 									bind:files
 									bind:prompt

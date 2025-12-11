@@ -8,14 +8,24 @@ if TYPE_CHECKING:
     from langbuilder.components.amazon.amazon_bedrock_embedding import AmazonBedrockEmbeddingsComponent
     from langbuilder.components.amazon.amazon_bedrock_model import AmazonBedrockComponent
     from langbuilder.components.amazon.s3_bucket_uploader import S3BucketUploaderComponent
+    from langbuilder.components.amazon.dynamodb_session_store import DynamoDBSessionStoreComponent
+    from langbuilder.components.amazon.dynamodb_session_retrieve import DynamoDBSessionRetrieveComponent
 
 _dynamic_imports = {
     "AmazonBedrockEmbeddingsComponent": "amazon_bedrock_embedding",
     "AmazonBedrockComponent": "amazon_bedrock_model",
     "S3BucketUploaderComponent": "s3_bucket_uploader",
+    "DynamoDBSessionStoreComponent": "dynamodb_session_store",
+    "DynamoDBSessionRetrieveComponent": "dynamodb_session_retrieve",
 }
 
-__all__ = ["AmazonBedrockComponent", "AmazonBedrockEmbeddingsComponent", "S3BucketUploaderComponent"]
+__all__ = [
+    "AmazonBedrockComponent",
+    "AmazonBedrockEmbeddingsComponent",
+    "S3BucketUploaderComponent",
+    "DynamoDBSessionStoreComponent",
+    "DynamoDBSessionRetrieveComponent",
+]
 
 
 def __getattr__(attr_name: str) -> Any:
