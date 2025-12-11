@@ -3,11 +3,11 @@ import { browser, dev } from '$app/environment';
 
 export const APP_NAME = 'ActionBridge';
 
-// Backend IP for dev environment
-const DEV_BACKEND_IP = 'ec2-34-224-7-3.compute-1.amazonaws.com'; // Tu IP de instancia aquí
+// Backend domain for dev environment
+const DEV_BACKEND_DOMAIN = 'dev-langbuilder-app.cloudgeometry.com'; // Con SSL automático
 
-export const WEBUI_HOSTNAME = browser ? (dev ? `${DEV_BACKEND_IP}:8767` : location.host) : '';
-export const WEBUI_BASE_URL = browser ? (dev ? `http://${WEBUI_HOSTNAME}` : `${location.protocol}//${location.host}`) : ``;
+export const WEBUI_HOSTNAME = browser ? (dev ? DEV_BACKEND_DOMAIN : location.host) : '';
+export const WEBUI_BASE_URL = browser ? (dev ? `https://${WEBUI_HOSTNAME}` : `${location.protocol}//${location.host}`) : ``;
 export const WEBUI_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1`;
 
 export const OLLAMA_API_BASE_URL = `${WEBUI_BASE_URL}/ollama`;
