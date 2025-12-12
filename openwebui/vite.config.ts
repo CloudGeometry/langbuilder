@@ -21,6 +21,7 @@ export default defineConfig({
 			'localhost',
 			'127.0.0.1',
 			'dev-langbuilder-app.cloudgeometry.com',
+			'langbuilder-app.cloudgeometry.com',
 			'.cloudgeometry.com'
 		]
 	},
