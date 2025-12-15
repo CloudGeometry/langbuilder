@@ -69,6 +69,14 @@ if [ -f ./scripts/setup/setup_env.sh ]; then
     source ./scripts/setup/setup_env.sh 2>/dev/null || true
 fi
 
+# Load environment variables from local .env file (for authentication settings, etc.)
+if [ -f "$LOCAL_ENV_FILE" ]; then
+    echo -e "${GREEN}Loading environment from .env...${NC}"
+    set -a
+    source "$LOCAL_ENV_FILE"
+    set +a
+fi
+
 # Install PyTorch for macOS (MPS support, not CPU-only)
 echo -e "${YELLOW}Ensuring PyTorch is installed for macOS...${NC}"
 uv pip install torch torchvision 2>/dev/null || echo "PyTorch already installed or skipping..."
