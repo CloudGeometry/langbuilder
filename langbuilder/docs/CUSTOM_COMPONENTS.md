@@ -1,6 +1,6 @@
 # LangBuilder Custom Components Documentation
 
-This document provides comprehensive documentation for all custom components developed by CloudGeometry for LangBuilder. These components integrate with HubSpot CRM, Zoho Recruit ATS, and provide specialized business logic for content generation workflows.
+This document provides comprehensive documentation for all custom components developed by CloudGeometry for LangBuilder. For each component, we explain not just **what** it does, but **how** it works internally.
 
 ---
 
@@ -30,315 +30,482 @@ This document provides comprehensive documentation for all custom components dev
    - [Zoho Recruit Notes](#zoho-recruit-notes)
 
 4. [Flow Patterns](#flow-patterns)
-   - [Content Generation Pipeline](#content-generation-pipeline)
-   - [CRM Integration Pipeline](#crm-integration-pipeline)
-   - [Recruitment Automation Pipeline](#recruitment-automation-pipeline)
 
 ---
 
 ## CloudGeometry Components
 
-These components implement specialized business logic for CloudGeometry's content generation and lead engagement workflows.
-
 ### Pain Point Mapper
 
-**Component Name:** `PainPointMapper`
-**Display Name:** Pain Point Mapper
 **Location:** `components/cloudgeometry/pain_point_mapper.py`
 
-#### Purpose
+#### What It Does
 
-Maps a combination of role, industry, and service type to a relevant business pain point. Contains 150+ pre-defined mappings across 6 cloud services, 5 roles, and 5 industries to generate contextually relevant messaging for leads.
+Returns a business pain point string based on who the lead is (role), what industry they're in, and which CloudGeometry service they're interested in.
+
+#### How It Works (Implementation Details)
+
+**This is a hardcoded lookup table.** The component contains a Python dictionary called `PAIN_POINT_MATRIX` with exactly 150 pre-written entries. There is no AI, no database, no external API - just a dictionary lookup.
+
+**The data structure:**
+```python
+PAIN_POINT_MATRIX = {
+    # Key is a tuple: (role, industry, service_type)
+    # Value is a pain point string
+
+    ("CFO", "Healthcare", "AI Transformation"):
+        "AI implementation ROI and HIPAA-compliant ML infrastructure costs",
+
+    ("CTO", "Fintech", "Cloud Migration"):
+        "secure cloud architecture, PCI-DSS compliance, and multi-region setup",
+
+    ("VP Engineering", "Retail", "DevOps Acceleration"):
+        "high-velocity deployments during campaigns and sales",
+
+    # ... 147 more entries like this
+}
+```
+
+**The lookup logic:**
+```python
+def map_pain_point(self):
+    # 1. Extract text from inputs (handles Message, Data, or string)
+    role = self._extract_value(self.role)        # e.g., "CTO"
+    industry = self._extract_value(self.industry) # e.g., "Healthcare"
+    service = self._extract_value(self.service_type)  # e.g., "AI Transformation"
+
+    # 2. Create lookup key as tuple
+    lookup_key = (role, industry, service)
+
+    # 3. Simple dictionary lookup
+    pain_point = self.PAIN_POINT_MATRIX.get(lookup_key)
+
+    # 4. If no match found, return generic fallback
+    if pain_point is None:
+        pain_point = f"cloud optimization and {service.lower()} best practices"
+        is_default = True
+```
+
+**Supported combinations (must match exactly):**
+
+| Roles (5) | Industries (5) | Services (6) |
+|-----------|----------------|--------------|
+| CFO | Healthcare | AI Transformation |
+| CTO | Fintech | App Modernization |
+| CIO | Technology | Cloud Migration |
+| VP Engineering | Retail | DevOps Acceleration |
+| Engineering Manager | Manufacturing | Data Platform |
+| | | Managed Services |
+
+**Total entries:** 5 roles × 5 industries × 6 services = **150 hardcoded pain points**
+
+#### Sample Entries
+
+Here are some actual entries from the matrix:
+
+| Role | Industry | Service | Pain Point |
+|------|----------|---------|------------|
+| CFO | Healthcare | AI Transformation | "AI implementation ROI and HIPAA-compliant ML infrastructure costs" |
+| CTO | Fintech | Cloud Migration | "secure cloud architecture, PCI-DSS compliance, and multi-region setup" |
+| CIO | Technology | Data Platform | "data strategy, governance framework, and self-service enablement" |
+| VP Engineering | Retail | DevOps Acceleration | "high-velocity deployments during campaigns and sales" |
+| Engineering Manager | Manufacturing | Managed Services | "production support and shift coverage" |
+
+#### What Happens If There's No Match
+
+If the input combination doesn't exist in the matrix (e.g., role="Sales Manager"), the component returns a generic fallback:
+
+```python
+pain_point = f"cloud optimization and {service_type.lower()} best practices"
+is_default = True  # Flag indicating fallback was used
+```
 
 #### Inputs
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `role` | HandleInput (Message, Data) | Yes | The lead's job role (e.g., "CTO", "VP of Engineering") |
-| `industry` | HandleInput (Message, Data) | Yes | The lead's industry (e.g., "Financial Services", "Healthcare") |
-| `service_type` | HandleInput (Message, Data) | Yes | The cloud service being offered |
-
-**Supported Service Types:**
-- AI Transformation
-- Cloud Cost Optimization
-- DevOps Automation
-- Data Analytics
-- Security & Compliance
-- Cloud Migration
-
-**Supported Roles:**
-- CTO / VP of Engineering
-- CFO / Finance Director
-- CEO / Business Owner
-- IT Director / Manager
-- Operations Director
-
-**Supported Industries:**
-- Financial Services
-- Healthcare
-- Retail / E-commerce
-- Manufacturing
-- Technology / SaaS
+| `role` | HandleInput (Message, Data) | Yes | Must be one of: CFO, CTO, CIO, VP Engineering, Engineering Manager |
+| `industry` | HandleInput (Message, Data) | Yes | Must be one of: Healthcare, Fintech, Technology, Retail, Manufacturing |
+| `service_type` | HandleInput (Message, Data) | Yes | Must be one of the 6 services listed above |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `pain_point` | Data | Contains: `pain_point` (string), `role`, `industry`, `service_type`, `is_default` (bool) |
+| `pain_point` | Data | `{"pain_point": "...", "role": "...", "industry": "...", "service_type": "...", "is_default": bool}` |
 
-#### What Can Connect To It
+#### Limitations
 
-- **Text Outputs**: Any component outputting Message or Data containing role/industry/service text
-- **LLM Outputs**: AI-extracted role/industry information
-- **Form Inputs**: Webhook data with lead information
-- **HubSpot Components**: Contact or company data with role/industry fields
+1. **Exact string matching** - "CFO" works, "Chief Financial Officer" does not
+2. **No fuzzy matching** - Typos or variations will trigger the fallback
+3. **Fixed vocabulary** - Adding new roles/industries requires code changes
+4. **English only** - All pain points are in English
 
-#### What It Connects To
+#### When to Extend
 
-- **Prompt Templates**: Feed pain points into AI prompts for personalized content
-- **Jinja2 Renderer**: Use pain points in document templates
-- **LLM Components**: Provide context for AI content generation
-
-#### Example Usage
-
-```
-[HubSpot Contact Fetcher] → role → [Pain Point Mapper]
-[HubSpot Company Fetcher] → industry → [Pain Point Mapper]
-[User Input] → service_type → [Pain Point Mapper]
-                                      ↓
-                              pain_point output
-                                      ↓
-                            [Prompt Template / LLM]
-```
+If you need to add a new industry (e.g., "Education"), you'd need to add 30 new entries to the dictionary (5 roles × 6 services).
 
 ---
 
 ### Savings Calculator
 
-**Component Name:** `SavingsCalculator`
-**Display Name:** Cloud Savings Calculator
 **Location:** `components/cloudgeometry/savings_calculator.py`
 
-#### Purpose
+#### What It Does
 
-Calculates projected cloud cost savings based on annual cloud spend and a configurable savings rate. Produces formatted currency values suitable for documents and presentations.
+Calculates projected cost savings as a simple percentage of annual cloud spend.
+
+#### How It Works (Implementation Details)
+
+**This is basic arithmetic.** There's no complex financial modeling - just multiplication.
+
+**The calculation:**
+```python
+def calculate_savings(self):
+    # 1. Parse the annual spend (handles "$500,000" or "500000" or 500000)
+    spend = self._parse_amount(self.annual_cloud_spend)  # e.g., 500000.0
+
+    # 2. Get savings rate (default 30%)
+    rate = self.savings_rate  # e.g., 0.30
+
+    # 3. Simple multiplication
+    savings_amount = spend * rate  # e.g., 150000.0
+
+    # 4. Format for display
+    savings_formatted = f"${savings_amount:,.0f}"  # e.g., "$150,000"
+```
+
+**The number parsing logic:**
+```python
+def _parse_amount(self, value):
+    # Extract text from Message/Data objects
+    text = self._extract_value(value)
+
+    # Remove currency symbols and commas: "$1,500,000" -> "1500000"
+    cleaned = re.sub(r'[^\d.]', '', text)
+
+    # Convert to float
+    return float(cleaned) if cleaned else 0.0
+```
 
 #### Inputs
 
 | Input | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `annual_cloud_spend` | HandleInput (Message, Data) | Yes | - | Annual cloud spend amount (extracts numeric value) |
-| `savings_rate` | FloatInput | No | 0.30 (30%) | Projected savings percentage |
+| `annual_cloud_spend` | HandleInput | Yes | - | Accepts: "500000", "$500,000", or numeric 500000 |
+| `savings_rate` | FloatInput | No | 0.30 | Percentage as decimal (0.30 = 30%) |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `savings` | Data | Contains: `calculated_savings` (float), `savings_amount` (float), `annual_spend` (float), `savings_rate` (float), `savings_formatted` (string, e.g., "$150,000"), `spend_formatted` (string) |
+| `savings` | Data | `{"savings_amount": 150000.0, "savings_formatted": "$150,000", "annual_spend": 500000.0, "spend_formatted": "$500,000", "savings_rate": 0.30}` |
 
-#### What Can Connect To It
-
-- **HubSpot Company Fetcher**: Company's estimated cloud spend
-- **Form Data**: User-provided spend information
-- **Data Extractors**: Numeric values from any source
-
-#### What It Connects To
-
-- **Jinja2 Renderer**: Inject formatted savings into documents
-- **Prompt Templates**: Use savings figures in AI content
-- **PDF Generator**: Include in generated reports
-
-#### Calculation Logic
+#### Example
 
 ```
-savings_amount = annual_cloud_spend × savings_rate
+Input:  annual_cloud_spend = "$2,000,000", savings_rate = 0.25
+Output: savings_amount = 500000.0, savings_formatted = "$500,000"
 ```
-
-The component automatically:
-- Parses numeric values from strings (handles "$500,000" → 500000)
-- Formats output with currency symbols and thousands separators
-- Preserves both raw numbers and formatted strings
 
 ---
 
 ### Template Selector
 
-**Component Name:** `TemplateSelector`
-**Display Name:** Template Selector
 **Location:** `components/cloudgeometry/template_selector.py`
 
-#### Purpose
+#### What It Does
 
-Selects the appropriate HTML template URL or file path based on the service type. Supports 6 service-specific templates and allows configuration of template source location.
+Returns a URL or file path to an HTML template based on the service type.
+
+#### How It Works (Implementation Details)
+
+**This is another hardcoded dictionary lookup.**
+
+**The data structure:**
+```python
+TEMPLATE_MAP = {
+    "AI Transformation": "ai_transformation_template.html",
+    "App Modernization": "app_modernization_template.html",
+    "Cloud Migration": "cloud_migration_template.html",
+    "DevOps Acceleration": "devops_template.html",
+    "Data Platform": "data_analytics_template.html",
+    "Managed Services": "managed_services_template.html",
+}
+DEFAULT_TEMPLATE = "generic_template.html"
+```
+
+**The lookup logic:**
+```python
+def select_template(self):
+    service = self._extract_value(self.service_type)
+
+    # Dictionary lookup with fallback
+    template_file = self.TEMPLATE_MAP.get(service, self.DEFAULT_TEMPLATE)
+
+    # Combine with base URL
+    if self.source_type == "url":
+        return f"{self.base_url}/{template_file}"
+    else:
+        return f"{self.base_path}/{template_file}"
+```
 
 #### Inputs
 
 | Input | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `service_type` | HandleInput (Message, Data) | Yes | - | Service type to select template for |
-| `base_url` | StrInput | No | GitHub raw URL | Base URL or path for templates |
-| `source_type` | DropdownInput | No | "url" | Either "url" or "file" |
-
-**Template Mapping:**
-| Service Type | Template File |
-|--------------|---------------|
-| AI Transformation | `ai_transformation_template.html` |
-| Cloud Cost Optimization | `cost_optimization_template.html` |
-| DevOps Automation | `devops_template.html` |
-| Data Analytics | `data_analytics_template.html` |
-| Security & Compliance | `security_template.html` |
-| Cloud Migration | `cloud_migration_template.html` |
-| (default) | `generic_template.html` |
+| `service_type` | HandleInput | Yes | - | Service name to look up |
+| `base_url` | StrInput | No | GitHub raw URL | Base URL for templates |
+| `source_type` | DropdownInput | No | "url" | "url" or "file" |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `template_source` | Data | Contains: `template_url` or `template_path`, `service_type`, `template_name`, `source_type` |
-
-#### What Can Connect To It
-
-- **User Input**: Service type selection
-- **CRM Data**: Service of interest from lead record
-- **Workflow Logic**: Dynamically determined service type
-
-#### What It Connects To
-
-- **Jinja2 Renderer**: Provides the template URL/path to render
+| `template_source` | Data | `{"template_url": "https://...", "template_name": "ai_transformation_template.html", "service_type": "AI Transformation"}` |
 
 ---
 
 ### Jinja2 Renderer
 
-**Component Name:** `Jinja2TemplateRenderer`
-**Display Name:** Jinja2 Template Renderer
 **Location:** `components/cloudgeometry/jinja2_renderer.py`
 
-#### Purpose
+#### What It Does
 
-Renders Jinja2 HTML templates with dynamic context variables. Fetches templates from URLs or local files and produces final HTML ready for PDF conversion. Includes a built-in fallback template if the primary template fails to load.
+Fetches an HTML template (from URL or file), replaces `{{ variable }}` placeholders with actual values, and returns the final HTML.
+
+#### How It Works (Implementation Details)
+
+**This uses the Jinja2 templating library** - a standard Python library for template rendering.
+
+**Step-by-step process:**
+```python
+async def render_template(self):
+    # 1. Get template source (URL or path)
+    template_data = self.template_source.data
+    template_url = template_data.get("template_url")
+
+    # 2. Fetch template content via HTTP
+    async with httpx.AsyncClient() as client:
+        response = await client.get(template_url)
+        template_html = response.text
+
+    # 3. Create Jinja2 template object
+    from jinja2 import Template
+    template = Template(template_html)
+
+    # 4. Build context dictionary from inputs
+    context = {
+        "company_name": self._extract_value(self.company_name),
+        "lead_name": self._extract_value(self.lead_name),
+        "role": self._extract_value(self.role),
+        "industry": self._extract_value(self.industry),
+        "ai_executive_summary": self._extract_value(self.ai_executive_summary),
+        "savings_formatted": savings_data.get("savings_formatted", "$0"),
+        "savings_amount": savings_data.get("savings_amount", 0),
+        "render_date": datetime.now().strftime("%B %d, %Y"),
+    }
+
+    # 5. Render template with context
+    rendered_html = template.render(**context)
+
+    return rendered_html
+```
+
+**What Jinja2 does:**
+
+Template input:
+```html
+<h1>Proposal for {{ company_name }}</h1>
+<p>Dear {{ lead_name }},</p>
+<p>We can save you {{ savings_formatted }} annually.</p>
+```
+
+After rendering with `{"company_name": "Acme Corp", "lead_name": "John", "savings_formatted": "$150,000"}`:
+```html
+<h1>Proposal for Acme Corp</h1>
+<p>Dear John,</p>
+<p>We can save you $150,000 annually.</p>
+```
+
+**Fallback behavior:**
+
+If template fetching fails, the component generates a basic HTML document:
+```python
+def _generate_fallback_html(self, context):
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><title>Proposal for {context['company_name']}</title></head>
+    <body>
+        <h1>Cloud Optimization Proposal</h1>
+        <p>Prepared for: {context['lead_name']}</p>
+        <p>Projected Savings: {context['savings_formatted']}</p>
+        <div>{context['ai_executive_summary']}</div>
+    </body>
+    </html>
+    """
+```
 
 #### Inputs
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `template_source` | HandleInput (Data) | Yes | Template URL/path from Template Selector |
-| `company_name` | HandleInput (Message, Data) | No | Company name for personalization |
-| `lead_name` | HandleInput (Message, Data) | No | Lead's name |
-| `role` | HandleInput (Message, Data) | No | Lead's job role |
-| `industry` | HandleInput (Message, Data) | No | Lead's industry |
-| `ai_executive_summary` | HandleInput (Message, Data) | No | AI-generated executive summary text |
+| `template_source` | HandleInput (Data) | Yes | URL/path from Template Selector |
+| `company_name` | HandleInput | No | Company name for `{{ company_name }}` |
+| `lead_name` | HandleInput | No | Lead name for `{{ lead_name }}` |
+| `role` | HandleInput | No | Role for `{{ role }}` |
+| `industry` | HandleInput | No | Industry for `{{ industry }}` |
+| `ai_executive_summary` | HandleInput | No | Summary for `{{ ai_executive_summary }}` |
 | `calculated_savings` | HandleInput (Data) | No | Savings data from Savings Calculator |
-| `annual_cloud_spend` | HandleInput (Message, Data) | No | Annual spend for display |
+| `annual_cloud_spend` | HandleInput | No | Spend for `{{ annual_spend_formatted }}` |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `html` | Data | Contains: `html` (rendered HTML string), `render_time_ms`, `template_source`, `fallback_used` (bool) |
-
-#### Template Variables Available
-
-The following Jinja2 variables are available in templates:
-
-```jinja2
-{{ company_name }}
-{{ lead_name }}
-{{ role }}
-{{ industry }}
-{{ ai_executive_summary }}
-{{ savings_formatted }}      # e.g., "$150,000"
-{{ savings_amount }}         # e.g., 150000.0
-{{ annual_spend_formatted }} # e.g., "$500,000"
-{{ annual_spend }}           # e.g., 500000.0
-{{ render_date }}            # Current date formatted
-```
-
-#### What Can Connect To It
-
-- **Template Selector**: Provides template source
-- **Pain Point Mapper**: Role, industry data
-- **Savings Calculator**: Financial projections
-- **HubSpot Components**: Contact/company data
-- **LLM Components**: AI-generated content (executive summary)
-
-#### What It Connects To
-
-- **WeasyPrint PDF Generator**: HTML → PDF conversion
-- **Direct Output**: HTML for email or web display
-
-#### Fallback Behavior
-
-If template loading fails (network error, file not found), the component automatically generates a professional fallback HTML document containing all provided data, ensuring the workflow never fails completely.
+| `html` | Data | `{"html": "<html>...</html>", "render_time_ms": 45, "fallback_used": false}` |
 
 ---
 
 ### WeasyPrint PDF Generator
 
-**Component Name:** `WeasyPrintPDF`
-**Display Name:** WeasyPrint PDF Generator
 **Location:** `components/cloudgeometry/weasyprint_pdf.py`
 
-#### Purpose
+#### What It Does
 
-Converts HTML content to PDF documents using the WeasyPrint library. Supports configurable page sizes and margins, and outputs base64-encoded PDF data suitable for file uploads or direct downloads.
+Converts HTML to a PDF file.
 
-#### System Requirements
+#### How It Works (Implementation Details)
 
-Requires system-level dependencies:
-- Cairo graphics library
-- Pango text rendering
-- GDK-PixBuf for images
+**This uses the WeasyPrint library** - a Python library that renders HTML/CSS to PDF. WeasyPrint is NOT a headless browser; it's a purpose-built HTML-to-PDF converter that supports a subset of CSS.
 
-Install on macOS: `brew install cairo pango gdk-pixbuf libffi`
-Install on Ubuntu: `apt-get install libcairo2 libpango-1.0-0 libgdk-pixbuf2.0-0`
+**The conversion process:**
+```python
+def generate_pdf(self):
+    from weasyprint import HTML, CSS
+
+    # 1. Get HTML content
+    html_content = self._extract_value(self.html_content)
+
+    # 2. Create page CSS for size and margins
+    page_css = CSS(string=f"""
+        @page {{
+            size: {self.page_size};
+            margin: {self.margin};
+        }}
+    """)
+
+    # 3. Convert HTML to PDF bytes
+    html_doc = HTML(string=html_content)
+    pdf_bytes = html_doc.write_pdf(stylesheets=[page_css])
+
+    # 4. Encode as base64 for transmission
+    pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
+
+    return {
+        "pdf_base64": pdf_base64,
+        "pdf_bytes": pdf_bytes,
+        "size_kb": len(pdf_bytes) / 1024,
+        "filename": self.filename or "document.pdf"
+    }
+```
+
+**System dependencies required:**
+
+WeasyPrint requires native libraries (NOT pure Python):
+- **Cairo** - 2D graphics library
+- **Pango** - Text rendering
+- **GDK-PixBuf** - Image handling
+
+```bash
+# macOS
+brew install cairo pango gdk-pixbuf libffi
+
+# Ubuntu/Debian
+apt-get install libcairo2 libpango-1.0-0 libgdk-pixbuf2.0-0
+
+# Then install Python package
+pip install weasyprint
+```
 
 #### Inputs
 
 | Input | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `html_content` | HandleInput (Message, Data) | Yes | - | HTML string to convert |
-| `filename` | HandleInput (Message, Data) | No | "document.pdf" | Output filename |
-| `page_size` | DropdownInput | No | "letter" | Page size: letter, A4, legal |
-| `margin` | StrInput | No | "0.75in" | Page margins (CSS format) |
+| `html_content` | HandleInput | Yes | - | HTML string to convert |
+| `filename` | HandleInput | No | "document.pdf" | Output filename |
+| `page_size` | DropdownInput | No | "letter" | letter, A4, or legal |
+| `margin` | StrInput | No | "0.75in" | CSS margin value |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `pdf` | Data | Contains: `pdf_base64` (string), `pdf_bytes` (bytes), `filename`, `size_kb`, `page_size`, `generation_time_ms` |
-
-#### What Can Connect To It
-
-- **Jinja2 Renderer**: Rendered HTML content
-- **Any HTML Source**: Raw HTML strings
-
-#### What It Connects To
-
-- **HubSpot File Uploader**: Upload PDF to CRM
-- **Email Components**: Attach PDF to emails
-- **Storage Components**: Save to cloud storage
-- **Zoho Recruit Attachments**: Attach to candidate records
-
-#### Page Size Reference
-
-| Size | Dimensions |
-|------|------------|
-| letter | 8.5" × 11" |
-| A4 | 210mm × 297mm |
-| legal | 8.5" × 14" |
+| `pdf` | Data | `{"pdf_base64": "JVBERi0x...", "pdf_bytes": <bytes>, "size_kb": 125.4, "filename": "proposal.pdf"}` |
 
 ---
 
 ### Contact Info Extractor
 
-**Component Name:** `ContactInfoExtractor`
-**Display Name:** Contact Info Extractor
 **Location:** `components/cloudgeometry/contact_info_extractor.py`
 
-#### Purpose
+#### What It Does
 
-Parses natural language input to extract contact identification and topic information. Useful for processing conversational queries like "Ken about AI Transformation" or "contact 12345 regarding cloud costs".
+Parses natural language text to extract a contact name, ID, or topic.
+
+#### How It Works (Implementation Details)
+
+**This uses regular expressions (regex)** - no AI, no NLP library, just pattern matching.
+
+**The parsing logic:**
+```python
+import re
+
+def parse_contact_info(self):
+    text = self.text_input  # e.g., "Ken about AI Transformation"
+
+    result = {
+        "contact_id": None,
+        "contact_name": None,
+        "topic": None
+    }
+
+    # Pattern 1: Look for numeric ID (5+ digits)
+    id_match = re.search(r'\b(\d{5,})\b', text)
+    if id_match:
+        result["contact_id"] = id_match.group(1)
+
+    # Pattern 2: Look for name before keywords
+    # Matches: "Ken about", "John Smith regarding", "Jane for"
+    name_match = re.search(
+        r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:about|regarding|for|on)\b',
+        text
+    )
+    if name_match:
+        result["contact_name"] = name_match.group(1)
+
+    # Pattern 3: Look for topic after keywords
+    # Matches: "about AI Transformation", "regarding cloud costs"
+    topic_match = re.search(
+        r'(?:about|regarding|for|on)\s+(.+)$',
+        text,
+        re.IGNORECASE
+    )
+    if topic_match:
+        result["topic"] = topic_match.group(1).strip()
+
+    return result
+```
+
+**Examples:**
+
+| Input | contact_name | contact_id | topic |
+|-------|--------------|------------|-------|
+| "Ken about AI Transformation" | "Ken" | None | "AI Transformation" |
+| "contact 12345678 regarding cloud" | None | "12345678" | "cloud" |
+| "John Smith for DevOps" | "John Smith" | None | "DevOps" |
+| "random text here" | None | None | None |
 
 #### Inputs
 
@@ -350,638 +517,651 @@ Parses natural language input to extract contact identification and topic inform
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `parsed_data` | Data | Contains: `contact_id` (if numeric ID found), `contact_name` (if name found), `topic` (extracted topic) |
+| `parsed_data` | Data | `{"contact_name": "Ken", "contact_id": null, "topic": "AI Transformation"}` |
 
-#### Parsing Logic
+#### Limitations
 
-The component uses regex patterns to identify:
-1. **Numeric IDs**: Extracts sequences of 5+ digits as contact IDs
-2. **Names**: Extracts capitalized words before keywords like "about", "regarding", "for"
-3. **Topics**: Extracts text after "about", "regarding", "for", "on"
-
-#### What Can Connect To It
-
-- **Chat Input**: User messages in conversational interfaces
-- **Webhook Data**: Incoming request text
-- **Form Submissions**: Free-text fields
-
-#### What It Connects To
-
-- **HubSpot Contact Search**: Use extracted name to find contact
-- **HubSpot Contact Fetcher**: Use extracted ID to fetch contact
-- **Workflow Logic**: Route based on extracted topic
+1. **Case sensitive for names** - Names must start with capital letter
+2. **Limited keywords** - Only recognizes "about", "regarding", "for", "on"
+3. **No fuzzy matching** - Won't correct typos
+4. **English only** - Keywords are English
 
 ---
 
 ## HubSpot Integration Components
 
-These components provide full integration with HubSpot CRM for contact management, company data, file storage, and engagement tracking.
+These components make HTTP API calls to HubSpot's REST API.
 
 ### HubSpot Contact Search
 
-**Component Name:** `HubSpotContactSearch`
-**Display Name:** HubSpot Contact Search
 **Location:** `components/hubspot/hubspot_contact_search.py`
 
-#### Purpose
+#### What It Does
 
-Searches HubSpot contacts by name or email, returning matching contacts with pagination support. Automatically selects the most relevant match when multiple results are found.
+Searches HubSpot for contacts by name or email.
 
-#### Inputs
+#### How It Works (Implementation Details)
 
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `hubspot_api_key` | SecretStrInput | Yes | - | HubSpot private app API key |
-| `parsed_data` | DataInput | No | - | Parsed data from Contact Info Extractor |
-| `search_query` | StrInput | No | - | Direct search query (name or email) |
-| `limit` | IntInput | No | 10 | Maximum results to return |
+**This makes an HTTP POST request to HubSpot's Search API.**
 
-**Note:** Either `parsed_data` or `search_query` must be provided.
+**The API call:**
+```python
+async def search_contacts(self):
+    url = "https://api.hubapi.com/crm/v3/objects/contacts/search"
 
-#### Outputs
+    headers = {
+        "Authorization": f"Bearer {self.hubspot_api_key}",
+        "Content-Type": "application/json"
+    }
 
-| Output | Type | Description |
-|--------|------|-------------|
-| `search_results` | Data | Contains: `contacts` (list), `total_count`, `selected_contact_id` (best match), `search_query` |
+    # Build search filter
+    payload = {
+        "filterGroups": [{
+            "filters": [{
+                "propertyName": "firstname",
+                "operator": "CONTAINS_TOKEN",
+                "value": self.search_query
+            }]
+        }],
+        "properties": ["firstname", "lastname", "email", "phone", "jobtitle"],
+        "limit": self.limit
+    }
 
-#### What Can Connect To It
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+```
 
-- **Contact Info Extractor**: Parsed contact name/ID
-- **User Input**: Manual search query
-- **Webhook Data**: Search parameters from external systems
+**What HubSpot returns:**
+```json
+{
+  "total": 3,
+  "results": [
+    {
+      "id": "12345",
+      "properties": {
+        "firstname": "Ken",
+        "lastname": "Smith",
+        "email": "ken@example.com"
+      }
+    },
+    ...
+  ]
+}
+```
 
-#### What It Connects To
+**Selection logic:**
 
-- **HubSpot Contact Fetcher**: Use `selected_contact_id` to get full details
-- **Conditional Logic**: Branch based on result count
+The component picks the "best" match from results:
+```python
+def _select_best_match(self, contacts, search_query):
+    # Exact match on firstname gets priority
+    for contact in contacts:
+        if contact["properties"]["firstname"].lower() == search_query.lower():
+            return contact["id"]
 
----
-
-### HubSpot Contact Fetcher
-
-**Component Name:** `HubSpotContactFetcher`
-**Display Name:** HubSpot Contact Fetcher
-**Location:** `components/hubspot/hubspot_contact_fetcher.py`
-
-#### Purpose
-
-Retrieves detailed contact information from HubSpot by contact ID. Supports fetching custom properties and associated company relationships.
-
-#### Inputs
-
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `hubspot_api_key` | SecretStrInput | Yes | - | HubSpot private app API key |
-| `contact_id` | HandleInput (Message, Data) | Yes | - | HubSpot contact ID |
-| `properties` | StrInput | No | (common fields) | Comma-separated property names |
-| `include_company_association` | BoolInput | No | True | Fetch associated company IDs |
-
-**Default Properties:**
-`firstname, lastname, email, phone, jobtitle, company, lifecyclestage, hs_lead_status`
-
-#### Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| `contact` | Data | Full contact record with all requested properties and `associated_company_ids` list |
-
-#### What Can Connect To It
-
-- **HubSpot Contact Search**: Selected contact ID from search
-- **Webhook Data**: Contact ID from HubSpot workflows
-- **Contact Info Extractor**: Extracted numeric contact ID
-
-#### What It Connects To
-
-- **Pain Point Mapper**: Provide role for pain point lookup
-- **Jinja2 Renderer**: Provide contact details for document
-- **HubSpot Company Fetcher**: Use associated company ID
-- **HubSpot Contact Updater**: Update the fetched contact
-- **Any component needing contact data**
-
----
-
-### HubSpot Contact Updater
-
-**Component Name:** `HubSpotContactUpdater`
-**Display Name:** HubSpot Contact Updater
-**Location:** `components/hubspot/hubspot_contact_updater.py`
-
-#### Purpose
-
-Updates contact properties in HubSpot. Can update any standard or custom contact property.
+    # Otherwise return first result
+    return contacts[0]["id"] if contacts else None
+```
 
 #### Inputs
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
 | `hubspot_api_key` | SecretStrInput | Yes | HubSpot private app API key |
-| `contact_id` | HandleInput (Message, Data) | Yes | Contact ID to update |
-| `properties_json` | HandleInput (Message, Data) | Yes | JSON string of properties to update |
+| `parsed_data` | DataInput | No | From Contact Info Extractor |
+| `search_query` | StrInput | No | Direct search string |
+| `limit` | IntInput | No (default 10) | Max results |
 
-**Properties JSON Example:**
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `search_results` | Data | `{"contacts": [...], "total_count": 3, "selected_contact_id": "12345"}` |
+
+---
+
+### HubSpot Contact Fetcher
+
+**Location:** `components/hubspot/hubspot_contact_fetcher.py`
+
+#### What It Does
+
+Retrieves a single contact's full details from HubSpot by ID.
+
+#### How It Works (Implementation Details)
+
+**This makes an HTTP GET request to HubSpot's Contacts API.**
+
+**The API call:**
+```python
+async def fetch_contact(self):
+    contact_id = self._extract_value(self.contact_id)
+
+    url = f"https://api.hubapi.com/crm/v3/objects/contacts/{contact_id}"
+
+    params = {
+        "properties": self.properties,  # e.g., "firstname,lastname,email,jobtitle"
+        "associations": "companies" if self.include_company_association else ""
+    }
+
+    headers = {"Authorization": f"Bearer {self.hubspot_api_key}"}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        return response.json()
+```
+
+**What HubSpot returns:**
 ```json
 {
-  "lifecyclestage": "opportunity",
-  "hs_lead_status": "QUALIFIED",
-  "custom_field": "value"
+  "id": "12345",
+  "properties": {
+    "firstname": "Ken",
+    "lastname": "Smith",
+    "email": "ken@example.com",
+    "jobtitle": "CTO",
+    "company": "Acme Corp"
+  },
+  "associations": {
+    "companies": {
+      "results": [{"id": "67890"}]
+    }
+  }
 }
 ```
 
-#### Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| `result` | Data | Contains: `success` (bool), `contact_id`, `updated_properties`, `hubspot_url` |
-
-#### What Can Connect To It
-
-- **HubSpot Contact Fetcher**: Contact ID to update
-- **Workflow Logic**: Computed property values
-- **LLM Output**: AI-determined field values
-
-#### What It Connects To
-
-- **Flow End**: Terminal action
-- **Notification Components**: Confirm update
-- **Logging**: Audit trail
-
----
-
-### HubSpot Company Fetcher
-
-**Component Name:** `HubSpotCompanyFetcher`
-**Display Name:** HubSpot Company Fetcher
-**Location:** `components/hubspot/hubspot_company_fetcher.py`
-
-#### Purpose
-
-Retrieves company information from HubSpot and derives useful analytics fields like company size category and estimated cloud spend based on employee count.
-
 #### Inputs
 
 | Input | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `hubspot_api_key` | SecretStrInput | Yes | - | HubSpot private app API key |
-| `company_id` | HandleInput (Message, Data) | Yes | - | HubSpot company ID |
-| `properties` | StrInput | No | (common fields) | Comma-separated property names |
-
-**Default Properties:**
-`name, domain, industry, numberofemployees, annualrevenue, city, state, country`
+| `hubspot_api_key` | SecretStrInput | Yes | - | API key |
+| `contact_id` | HandleInput | Yes | - | HubSpot contact ID |
+| `properties` | StrInput | No | common fields | Comma-separated property names |
+| `include_company_association` | BoolInput | No | True | Also fetch company IDs |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `company` | Data | Company data plus derived fields: `company_size` (enum), `estimated_cloud_spend` (calculated) |
+| `contact` | Data | Full contact record with `associated_company_ids` list |
 
-#### Derived Fields
+---
 
-**Company Size Categories:**
-| Employees | Category |
-|-----------|----------|
-| 1-50 | Small |
-| 51-200 | Medium |
-| 201-1000 | Large |
-| 1001+ | Enterprise |
+### HubSpot Contact Updater
 
-**Estimated Cloud Spend Formula:**
+**Location:** `components/hubspot/hubspot_contact_updater.py`
+
+#### What It Does
+
+Updates properties on an existing HubSpot contact.
+
+#### How It Works (Implementation Details)
+
+**This makes an HTTP PATCH request to HubSpot's Contacts API.**
+
+**The API call:**
+```python
+async def update_contact(self):
+    contact_id = self._extract_value(self.contact_id)
+    properties = json.loads(self._extract_value(self.properties_json))
+
+    url = f"https://api.hubapi.com/crm/v3/objects/contacts/{contact_id}"
+
+    headers = {
+        "Authorization": f"Bearer {self.hubspot_api_key}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {"properties": properties}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.patch(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
 ```
-spend = number_of_employees × $2,000/year (capped at $10M)
-```
-
-#### What Can Connect To It
-
-- **HubSpot Contact Fetcher**: Associated company ID
-- **Webhook Data**: Company ID from HubSpot
-- **Direct Input**: Known company ID
-
-#### What It Connects To
-
-- **Pain Point Mapper**: Industry for pain point lookup
-- **Savings Calculator**: Estimated cloud spend
-- **Jinja2 Renderer**: Company details for document
-- **Template Selector**: Industry-based template selection
-
----
-
-### HubSpot File Uploader
-
-**Component Name:** `HubSpotFileUploader`
-**Display Name:** HubSpot File Uploader
-**Location:** `components/hubspot/hubspot_file_uploader.py`
-
-#### Purpose
-
-Uploads files (typically PDFs) to HubSpot's Files API. Returns a shareable URL that can be used in emails, notes, or stored on contact records.
-
-#### Inputs
-
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `hubspot_api_key` | SecretStrInput | Yes | - | HubSpot private app API key |
-| `pdf_base64` | HandleInput (Message, Data) | Yes | - | Base64-encoded file content |
-| `filename` | HandleInput (Message, Data) | Yes | - | Filename with extension |
-| `folder_path` | StrInput | No | "/" | HubSpot folder path |
-| `access_level` | DropdownInput | No | "PUBLIC_INDEXABLE" | File visibility |
-
-**Access Level Options:**
-- `PUBLIC_INDEXABLE` - Publicly accessible, indexed by search engines
-- `PUBLIC_NOT_INDEXABLE` - Publicly accessible, not indexed
-- `PRIVATE` - Requires authentication
-
-#### Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| `result` | Data | Contains: `success`, `file_url` (shareable link), `file_id`, `filename`, `size_bytes` |
-
-#### What Can Connect To It
-
-- **WeasyPrint PDF Generator**: PDF base64 and filename
-- **Any File Generator**: Base64-encoded file content
-
-#### What It Connects To
-
-- **HubSpot Contact Updater**: Store file URL on contact
-- **HubSpot Note Creator**: Reference file URL in note
-- **Email Components**: Include download link
-
----
-
-### HubSpot Note Creator
-
-**Component Name:** `HubSpotNoteCreator`
-**Display Name:** HubSpot Note Creator
-**Location:** `components/hubspot/hubspot_note_creator.py`
-
-#### Purpose
-
-Creates engagement notes on HubSpot contact timelines. Useful for logging AI-generated content, workflow completions, or any activity that should appear in the contact's history.
-
-#### Inputs
-
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `hubspot_api_key` | SecretStrInput | Yes | - | HubSpot private app API key |
-| `contact_id` | HandleInput (Message, Data) | Yes | - | Contact to attach note to |
-| `subject_line` | HandleInput (Message, Data) | No | "AI Generated Note" | Note subject/title |
-| `email_body` | HandleInput (Message, Data) | Yes | - | Note content (supports HTML) |
-| `source_cited` | HandleInput (Message, Data) | No | - | Source reference for audit |
-
-#### Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| `result` | Data | Contains: `success`, `engagement_id`, `hubspot_url` (direct link to note) |
-
-#### What Can Connect To It
-
-- **HubSpot Contact Fetcher**: Contact ID
-- **LLM Components**: AI-generated note content
-- **Jinja2 Renderer**: Formatted HTML content
-- **Any Text Source**: Note body text
-
-#### What It Connects To
-
-- **Flow End**: Terminal action
-- **Notification Components**: Confirm note creation
-- **Logging**: Activity audit trail
-
----
-
-## Zoho Recruit Integration Components
-
-These components provide integration with Zoho Recruit ATS (Applicant Tracking System) for the AI Recruitment Command Center project.
-
-### Zoho Recruit Auth
-
-**Component Name:** `ZohoRecruitAuth`
-**Display Name:** Recruit Auth (Zoho)
-**Location:** `components/zoho/zoho_recruit_auth.py`
-
-#### Purpose
-
-Handles OAuth 2.0 authentication for Zoho Recruit API. Manages token refresh automatically and supports all Zoho data center regions. This component must be connected to all other Zoho Recruit components.
-
-#### Setup Requirements
-
-1. Create a Self-Client application in [Zoho API Console](https://api-console.zoho.com/)
-2. Generate a refresh token with required scopes
-3. Configure client ID, client secret, and refresh token in this component
-
-**Required OAuth Scopes:**
-- `ZohoRecruit.modules.ALL`
-- `ZohoRecruit.modules.attachments.ALL`
-- `ZohoRecruit.modules.notes.ALL`
-- `ZohoRecruit.settings.ALL`
 
 #### Inputs
 
 | Input | Type | Required | Description |
 |-------|------|----------|-------------|
-| `client_id` | SecretStrInput | Yes | OAuth Client ID from Zoho API Console |
-| `client_secret` | SecretStrInput | Yes | OAuth Client Secret |
-| `refresh_token` | SecretStrInput | Yes | Long-lived refresh token |
-| `region` | DropdownInput | No | Data center region: US, EU, IN, AU, CN, JP (default: US) |
+| `hubspot_api_key` | SecretStrInput | Yes | API key |
+| `contact_id` | HandleInput | Yes | Contact to update |
+| `properties_json` | HandleInput | Yes | JSON string: `{"field": "value"}` |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
-| `auth_config` | Data | Contains: `access_token`, `api_base_url`, `accounts_url`, `region`, `_auth_component` (for token refresh) |
+| `result` | Data | `{"success": true, "contact_id": "12345", "updated_properties": {...}}` |
 
-#### Region URLs
+---
 
-| Region | API Base URL |
-|--------|--------------|
-| US | `https://recruit.zoho.com/recruit/v2` |
-| EU | `https://recruit.zoho.eu/recruit/v2` |
-| IN | `https://recruit.zoho.in/recruit/v2` |
-| AU | `https://recruit.zoho.com.au/recruit/v2` |
-| CN | `https://recruit.zoho.com.cn/recruit/v2` |
-| JP | `https://recruit.zoho.jp/recruit/v2` |
+### HubSpot Company Fetcher
 
-#### Token Management
+**Location:** `components/hubspot/hubspot_company_fetcher.py`
 
-- Access tokens expire after 1 hour
-- Component automatically refreshes tokens 5 minutes before expiry
-- Refresh is transparent to downstream components
+#### What It Does
 
-#### What It Connects To
+Retrieves company information and calculates derived analytics fields.
 
-All other Zoho Recruit components require this auth configuration:
-- Zoho Recruit Candidates
-- Zoho Recruit Job Openings
-- Zoho Recruit Attachments
-- Zoho Recruit Notes
+#### How It Works (Implementation Details)
+
+**This makes an HTTP GET to HubSpot, then calculates additional fields.**
+
+**The API call (same pattern as contact fetcher):**
+```python
+url = f"https://api.hubapi.com/crm/v3/objects/companies/{company_id}"
+```
+
+**Derived field calculations:**
+```python
+def _calculate_derived_fields(self, company):
+    employees = company.get("numberofemployees", 0)
+
+    # Company size category
+    if employees <= 50:
+        company_size = "Small"
+    elif employees <= 200:
+        company_size = "Medium"
+    elif employees <= 1000:
+        company_size = "Large"
+    else:
+        company_size = "Enterprise"
+
+    # Estimated cloud spend: $2,000 per employee, max $10M
+    estimated_spend = min(employees * 2000, 10_000_000)
+
+    return {
+        "company_size": company_size,
+        "estimated_cloud_spend": estimated_spend,
+        "estimated_cloud_spend_formatted": f"${estimated_spend:,.0f}"
+    }
+```
+
+#### Inputs
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `hubspot_api_key` | SecretStrInput | Yes | API key |
+| `company_id` | HandleInput | Yes | HubSpot company ID |
+| `properties` | StrInput | No | Properties to fetch |
+
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `company` | Data | Company data + `company_size`, `estimated_cloud_spend` |
+
+---
+
+### HubSpot File Uploader
+
+**Location:** `components/hubspot/hubspot_file_uploader.py`
+
+#### What It Does
+
+Uploads a file (typically PDF) to HubSpot's Files API.
+
+#### How It Works (Implementation Details)
+
+**This makes a multipart form upload to HubSpot's Files API.**
+
+**The API call:**
+```python
+async def upload_file(self):
+    url = "https://api.hubapi.com/files/v3/files"
+
+    # Decode base64 PDF content
+    pdf_bytes = base64.b64decode(self.pdf_base64)
+
+    # Create multipart form data
+    files = {
+        "file": (self.filename, pdf_bytes, "application/pdf")
+    }
+
+    data = {
+        "folderPath": self.folder_path,
+        "options": json.dumps({
+            "access": self.access_level  # PUBLIC_INDEXABLE, etc.
+        })
+    }
+
+    headers = {"Authorization": f"Bearer {self.hubspot_api_key}"}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, files=files, data=data)
+        response.raise_for_status()
+        return response.json()
+```
+
+**What HubSpot returns:**
+```json
+{
+  "id": "file-id-123",
+  "url": "https://app.hubspot.com/file-preview/123/file/456",
+  "name": "proposal.pdf",
+  "size": 125400
+}
+```
+
+#### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `hubspot_api_key` | SecretStrInput | Yes | - | API key |
+| `pdf_base64` | HandleInput | Yes | - | Base64-encoded file |
+| `filename` | HandleInput | Yes | - | Filename with extension |
+| `folder_path` | StrInput | No | "/" | HubSpot folder path |
+| `access_level` | DropdownInput | No | "PUBLIC_INDEXABLE" | Visibility |
+
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `result` | Data | `{"success": true, "file_url": "https://...", "file_id": "..."}` |
+
+---
+
+### HubSpot Note Creator
+
+**Location:** `components/hubspot/hubspot_note_creator.py`
+
+#### What It Does
+
+Creates a note on a HubSpot contact's timeline.
+
+#### How It Works (Implementation Details)
+
+**This makes two API calls:**
+1. Create the note (engagement)
+2. Associate it with the contact
+
+**The API calls:**
+```python
+async def create_note(self):
+    # 1. Create the note
+    note_url = "https://api.hubapi.com/crm/v3/objects/notes"
+
+    note_payload = {
+        "properties": {
+            "hs_note_body": self.email_body,
+            "hs_timestamp": int(time.time() * 1000)
+        }
+    }
+
+    response = await client.post(note_url, headers=headers, json=note_payload)
+    note_id = response.json()["id"]
+
+    # 2. Associate with contact
+    assoc_url = f"https://api.hubapi.com/crm/v3/objects/notes/{note_id}/associations/contacts/{self.contact_id}/note_to_contact"
+
+    await client.put(assoc_url, headers=headers)
+```
+
+#### Inputs
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `hubspot_api_key` | SecretStrInput | Yes | API key |
+| `contact_id` | HandleInput | Yes | Contact to attach note to |
+| `subject_line` | HandleInput | No | Note title |
+| `email_body` | HandleInput | Yes | Note content (HTML supported) |
+
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `result` | Data | `{"success": true, "engagement_id": "...", "hubspot_url": "..."}` |
+
+---
+
+## Zoho Recruit Integration Components
+
+### Zoho Recruit Auth
+
+**Location:** `components/zoho/zoho_recruit_auth.py`
+
+#### What It Does
+
+Handles OAuth 2.0 authentication for all Zoho Recruit API calls.
+
+#### How It Works (Implementation Details)
+
+**Zoho uses OAuth 2.0 with refresh tokens.** Access tokens expire after 1 hour, so this component manages token refresh automatically.
+
+**Token refresh flow:**
+```python
+async def _refresh_access_token(self):
+    # Zoho token endpoint varies by region
+    urls = self.REGION_URLS[self.region]
+    token_url = f"{urls['accounts']}/oauth/v2/token"
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            token_url,
+            data={
+                "grant_type": "refresh_token",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "refresh_token": self.refresh_token,
+            }
+        )
+        data = response.json()
+
+    self._access_token = data["access_token"]
+    # Tokens expire in 3600 seconds, refresh 5 min early
+    self._token_expiry = time.time() + 3600 - 300
+```
+
+**Token caching logic:**
+```python
+async def get_access_token(self):
+    # Return cached token if still valid
+    if self._access_token and time.time() < self._token_expiry:
+        return self._access_token
+
+    # Otherwise refresh
+    return await self._refresh_access_token()
+```
+
+**Region URLs:**
+
+Zoho has separate data centers:
+```python
+REGION_URLS = {
+    "US": {"api": "https://recruit.zoho.com/recruit/v2",
+           "accounts": "https://accounts.zoho.com"},
+    "EU": {"api": "https://recruit.zoho.eu/recruit/v2",
+           "accounts": "https://accounts.zoho.eu"},
+    # ... IN, AU, CN, JP
+}
+```
+
+#### Inputs
+
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `client_id` | SecretStrInput | Yes | From Zoho API Console |
+| `client_secret` | SecretStrInput | Yes | From Zoho API Console |
+| `refresh_token` | SecretStrInput | Yes | Long-lived token from Self-Client grant |
+| `region` | DropdownInput | No (default US) | Data center region |
+
+#### Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `auth_config` | Data | `{"access_token": "...", "api_base_url": "...", "_auth_component": self}` |
+
+**Important:** The output includes `_auth_component: self` which allows downstream components to call `get_access_token()` for automatic token refresh.
 
 ---
 
 ### Zoho Recruit Candidates
 
-**Component Name:** `ZohoRecruitCandidate`
-**Display Name:** Recruit Candidates (Zoho)
 **Location:** `components/zoho/zoho_recruit_candidate.py`
 
-#### Purpose
+#### What It Does
 
-Full CRUD operations for candidate records in Zoho Recruit. Supports listing, searching, retrieving, and updating candidate information.
+CRUD operations for candidate records in Zoho Recruit.
+
+#### How It Works (Implementation Details)
+
+**This makes HTTP calls to Zoho's REST API based on the selected operation.**
+
+**Operation examples:**
+```python
+# LIST - GET /Candidates
+async def _list_candidates(self, auth_config):
+    url = f"{auth_config['api_base_url']}/Candidates"
+    response = await client.get(url, headers=headers, params={"page": 1, "per_page": 200})
+    return response.json()["data"]
+
+# GET - GET /Candidates/{id}
+async def _get_candidate(self, auth_config):
+    url = f"{auth_config['api_base_url']}/Candidates/{self.candidate_id}"
+    response = await client.get(url, headers=headers)
+    return response.json()["data"][0]
+
+# SEARCH - GET /Candidates/search?criteria=...
+async def _search_candidates(self, auth_config):
+    url = f"{auth_config['api_base_url']}/Candidates/search"
+    params = {"criteria": "(Email:equals:john@example.com)"}
+    response = await client.get(url, headers=headers, params=params)
+    return response.json()["data"]
+
+# UPDATE - PUT /Candidates/{id}
+async def _update_candidate(self, auth_config):
+    url = f"{auth_config['api_base_url']}/Candidates/{self.candidate_id}"
+    payload = {"data": [self.update_data]}
+    response = await client.put(url, headers=headers, json=payload)
+    return response.json()
+```
 
 #### Inputs
 
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `auth` | HandleInput (Data) | Yes | - | Auth config from ZohoRecruitAuth |
-| `operation` | DropdownInput | No | "list" | Operation to perform |
-| `candidate_id` | StrInput | Conditional | - | Required for "get" and "update" |
-| `job_opening_id` | StrInput | Conditional | - | Required for "get_by_job" |
-| `search_criteria` | StrInput | Conditional | - | Required for "search" |
-| `update_data` | DictInput | Conditional | - | Required for "update" |
-| `fields` | StrInput | No | "" | Comma-separated fields to return |
-| `page` | IntInput | No | 1 | Page number for pagination |
-| `per_page` | IntInput | No | 200 | Records per page (max 200) |
-
-**Operations:**
-| Operation | Description | Required Inputs |
-|-----------|-------------|-----------------|
-| `list` | List all candidates with pagination | - |
-| `get` | Get single candidate by ID | `candidate_id` |
-| `search` | Search by criteria | `search_criteria` |
-| `update` | Update candidate fields | `candidate_id`, `update_data` |
-| `get_by_job` | Get candidates for a job | `job_opening_id` |
-
-**Search Criteria Format:**
-```
-(Email:equals:john@example.com)
-(Last_Name:starts_with:Smi)
-((City:equals:New York)and(Experience:greater_than:5))
-```
-
-#### Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| `result` | Data | Operation result with candidate data |
-| `candidates` | List[Data] | List of candidates for iteration |
-
-#### What Can Connect To It
-
-- **Zoho Recruit Auth**: Required auth configuration
-- **Zoho Recruit Job Openings**: Job ID for filtering
-- **Workflow Logic**: Search criteria, update data
-
-#### What It Connects To
-
-- **Zoho Recruit Attachments**: Candidate ID for attachments
-- **Zoho Recruit Notes**: Candidate ID for notes
-- **LLM Components**: Candidate data for analysis
-- **Loop Components**: Iterate over candidates list
-
-**Rate Limits:**
-- list/get: 200 requests/minute
-- search/update: 100 requests/minute
-
----
-
-### Zoho Recruit Job Openings
-
-**Component Name:** `ZohoRecruitJobOpening`
-**Display Name:** Recruit Job Openings (Zoho)
-**Location:** `components/zoho/zoho_recruit_job_opening.py`
-
-#### Purpose
-
-Access job opening records and extract job descriptions and requirements. Essential for matching candidates to positions and providing context for CV analysis.
-
-#### Inputs
-
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `auth` | HandleInput (Data) | Yes | - | Auth config from ZohoRecruitAuth |
-| `operation` | DropdownInput | No | "list" | Operation to perform |
-| `job_opening_id` | StrInput | Conditional | - | Required for get operations |
-| `fields` | StrInput | No | "" | Comma-separated fields to return |
-| `page` | IntInput | No | 1 | Page number |
-| `per_page` | IntInput | No | 200 | Records per page |
-
-**Operations:**
-| Operation | Description | Required Inputs |
-|-----------|-------------|-----------------|
-| `list` | List all job openings | - |
-| `get` | Get single job opening | `job_opening_id` |
-| `get_description` | Get job description text | `job_opening_id` |
-| `get_requirements` | Extract all requirements | `job_opening_id` |
-
-#### Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| `result` | Data | Operation result with job data |
-| `job_openings` | List[Data] | List of jobs for iteration |
-| `description_text` | str | Just the job description text |
-
-#### Requirements Data Structure
-
-The `get_requirements` operation returns:
-```json
-{
-  "job_title": "Senior Developer",
-  "description": "Full job description...",
-  "required_skills": "Python, AWS, Docker",
-  "experience": "5+ years",
-  "industry": "Technology",
-  "job_type": "Full-time",
-  "salary": "$150,000",
-  "location": "San Francisco",
-  "state": "CA",
-  "country": "USA",
-  "department": "Engineering",
-  "number_of_positions": 2,
-  "date_opened": "2024-01-15",
-  "target_date": "2024-03-01"
-}
-```
-
-#### What Can Connect To It
-
-- **Zoho Recruit Auth**: Required auth configuration
-
-#### What It Connects To
-
-- **Zoho Recruit Candidates**: Filter candidates by job
-- **LLM Components**: Job requirements for CV matching
-- **Prompt Templates**: Job details for analysis prompts
-
----
-
-### Zoho Recruit Attachments
-
-**Component Name:** `ZohoRecruitAttachment`
-**Display Name:** Recruit Attachments (Zoho)
-**Location:** `components/zoho/zoho_recruit_attachment.py`
-
-#### Purpose
-
-Handle file attachments on Zoho Recruit records, primarily CVs/resumes on candidate records. Supports listing, downloading, uploading, and extracting text from PDF resumes.
-
-#### System Requirements
-
-For PDF text extraction (`get_resume_text` operation):
-- pypdf library: `pip install pypdf`
-
-#### Inputs
-
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `auth` | HandleInput (Data) | Yes | - | Auth config from ZohoRecruitAuth |
-| `operation` | DropdownInput | No | "list" | Operation to perform |
-| `record_id` | StrInput | Yes | - | Candidate ID (or other record) |
-| `module` | DropdownInput | No | "Candidates" | Zoho module |
-| `attachment_id` | StrInput | Conditional | - | Required for download/get_resume_text |
-| `file` | FileInput | Conditional | - | Required for upload |
-| `filename` | StrInput | No | - | Custom filename for upload |
-
-**Operations:**
-| Operation | Description | Required Inputs |
-|-----------|-------------|-----------------|
-| `list` | List all attachments | `record_id` |
-| `download` | Download attachment | `record_id`, `attachment_id` |
-| `upload` | Upload new attachment | `record_id`, `file` |
-| `get_resume_text` | Extract PDF text | `record_id`, `attachment_id` |
-
-**Supported Modules:**
-- Candidates
-- Job_Openings
-- Contacts
-- Clients
+| Input | Type | Required | Description |
+|-------|------|----------|-------------|
+| `auth` | HandleInput (Data) | Yes | From ZohoRecruitAuth |
+| `operation` | DropdownInput | No | list, get, search, update, get_by_job |
+| `candidate_id` | StrInput | For get/update | Candidate record ID |
+| `search_criteria` | StrInput | For search | Zoho search syntax |
+| `update_data` | DictInput | For update | Fields to update |
 
 #### Outputs
 
 | Output | Type | Description |
 |--------|------|-------------|
 | `result` | Data | Operation result |
-| `attachments` | List[Data] | List of attachments with `is_resume` flag |
-| `file_content` | str | Base64-encoded file content |
-| `text_content` | str | Extracted text from PDF |
+| `candidates` | List[Data] | List of candidate records |
 
-#### Resume Detection
+---
 
-The component automatically flags likely resumes based on:
-- Filename contains: "resume", "cv", "curriculum", "vitae"
-- File extension: .pdf, .doc, .docx
+### Zoho Recruit Job Openings
 
-#### What Can Connect To It
+**Location:** `components/zoho/zoho_recruit_job_opening.py`
 
-- **Zoho Recruit Auth**: Required auth configuration
-- **Zoho Recruit Candidates**: Candidate ID
-- **File Components**: File content for upload
+#### What It Does
 
-#### What It Connects To
+Retrieves job opening records and extracts job descriptions/requirements.
 
-- **LLM Components**: Resume text for AI analysis
-- **Storage Components**: Downloaded file content
-- **Text Processing**: Extracted resume text
+#### How It Works (Implementation Details)
 
-**Rate Limits:**
-- list/download: 200 requests/minute
-- upload: 50 requests/minute
+**Same pattern as Candidates - HTTP GET to Zoho API.**
+
+**The `get_requirements` operation parses job fields:**
+```python
+async def _get_requirements(self, auth_config):
+    # First fetch the job opening
+    job = await self._get_job_opening(auth_config)
+
+    # Extract and structure requirements
+    return {
+        "job_title": job.get("Posting_Title", ""),
+        "description": job.get("Job_Description", ""),
+        "required_skills": job.get("Required_Skills", ""),
+        "experience": job.get("Experience", ""),
+        "industry": job.get("Industry", ""),
+        "salary": job.get("Salary", ""),
+        "location": job.get("City", ""),
+        # ... more fields
+    }
+```
+
+---
+
+### Zoho Recruit Attachments
+
+**Location:** `components/zoho/zoho_recruit_attachment.py`
+
+#### What It Does
+
+Handles file attachments (CVs/resumes) on candidate records.
+
+#### How It Works (Implementation Details)
+
+**For download:**
+```python
+async def _download_attachment(self, auth_config):
+    url = f"{base_url}/Candidates/{self.record_id}/Attachments/{self.attachment_id}"
+    response = await client.get(url, headers=headers)
+
+    # Return as base64
+    return {
+        "content_base64": base64.b64encode(response.content).decode(),
+        "filename": response.headers.get("Content-Disposition", "").split("filename=")[1]
+    }
+```
+
+**For PDF text extraction (uses pypdf library):**
+```python
+async def _get_resume_text(self, auth_config):
+    # Download the attachment
+    download = await self._download_attachment(auth_config)
+    pdf_bytes = base64.b64decode(download["content_base64"])
+
+    # Extract text using pypdf
+    import pypdf
+    reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+
+    text_parts = []
+    for page in reader.pages:
+        text_parts.append(page.extract_text())
+
+    return {"text": "\n".join(text_parts)}
+```
 
 ---
 
 ### Zoho Recruit Notes
 
-**Component Name:** `ZohoRecruitNotes`
-**Display Name:** Recruit Notes (Zoho)
 **Location:** `components/zoho/zoho_recruit_notes.py`
 
-#### Purpose
+#### What It Does
 
-Manage notes on Zoho Recruit records. Used for storing interview feedback, recruiter observations, AI-generated summaries, and status updates on candidate timelines.
+Creates and manages notes on candidate records.
 
-#### Inputs
+#### How It Works (Implementation Details)
 
-| Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `auth` | HandleInput (Data) | Yes | - | Auth config from ZohoRecruitAuth |
-| `operation` | DropdownInput | No | "get_notes" | Operation to perform |
-| `record_id` | StrInput | Yes | - | Candidate ID (or other record) |
-| `module` | DropdownInput | No | "Candidates" | Zoho module |
-| `note_id` | StrInput | Conditional | - | Required for update/delete |
-| `note_title` | StrInput | Conditional | - | Required for add_note |
-| `note_content` | MultilineInput | Conditional | - | Required for add_note |
+**Adding a note:**
+```python
+async def _add_note(self, auth_config):
+    url = f"{base_url}/Candidates/{self.record_id}/Notes"
 
-**Operations:**
-| Operation | Description | Required Inputs |
-|-----------|-------------|-----------------|
-| `get_notes` | Get all notes for record | `record_id` |
-| `add_note` | Add new note | `record_id`, `note_title`, `note_content` |
-| `update_note` | Update existing note | `record_id`, `note_id` |
-| `delete_note` | Delete a note | `record_id`, `note_id` |
+    payload = {
+        "data": [{
+            "Note_Title": self.note_title,
+            "Note_Content": self.note_content,
+            "Parent_Id": self.record_id,
+            "se_module": "Candidates"
+        }]
+    }
 
-#### Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| `result` | Data | Operation result with note_id if created |
-| `notes` | List[Data] | List of notes for iteration |
-
-#### What Can Connect To It
-
-- **Zoho Recruit Auth**: Required auth configuration
-- **Zoho Recruit Candidates**: Candidate ID
-- **LLM Components**: AI-generated note content
-- **Workflow Logic**: Dynamic note title/content
-
-#### What It Connects To
-
-- **Flow End**: Terminal action
-- **Notification Components**: Confirm note creation
-- **Logging**: Activity audit
-
-**Rate Limits:**
-- get_notes: 200 requests/minute
-- add/update/delete: 100 requests/minute
+    response = await client.post(url, headers=headers, json=payload)
+    return response.json()
+```
 
 ---
 
@@ -989,141 +1169,44 @@ Manage notes on Zoho Recruit records. Used for storing interview feedback, recru
 
 ### Content Generation Pipeline
 
-A typical flow for generating personalized content documents:
-
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                     CONTENT GENERATION PIPELINE                         │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  [Webhook/Trigger]                                                      │
-│        │                                                                │
-│        ▼                                                                │
-│  [Contact Info Extractor] ──────────────────────────────┐               │
-│        │                                                │               │
-│        ▼                                                ▼               │
-│  [HubSpot Contact Search] ◄────────────────── (search query)            │
-│        │                                                                │
-│        │ contact_id                                                     │
-│        ▼                                                                │
-│  [HubSpot Contact Fetcher] ────────► role ────► [Pain Point Mapper]     │
-│        │                                              │                 │
-│        │ company_id                                   │ pain_point      │
-│        ▼                                              ▼                 │
-│  [HubSpot Company Fetcher] ─► industry ──────► [Pain Point Mapper]      │
-│        │                                              │                 │
-│        │ estimated_cloud_spend                        │                 │
-│        ▼                                              │                 │
-│  [Savings Calculator] ───────────────────────────────┐│                 │
-│        │                                             ││                 │
-│        │ savings_formatted                           ││                 │
-│        ▼                                             ▼▼                 │
-│  [Template Selector] ──► template_url ──► [Jinja2 Renderer]             │
-│                                                  │                      │
-│        ┌──────────────────────────────◄──────────┘                      │
-│        │ html                                                           │
-│        ▼                                                                │
-│  [WeasyPrint PDF Generator]                                             │
-│        │                                                                │
-│        │ pdf_base64                                                     │
-│        ▼                                                                │
-│  [HubSpot File Uploader] ────────► file_url ────► [HubSpot Note Creator]│
-│                                                          │              │
-│                                                          ▼              │
-│                                                    [Flow Complete]      │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-### CRM Integration Pipeline
-
-Pattern for fetching and updating CRM data:
-
-```
-[Trigger] → [Contact Search] → [Contact Fetcher] → [Process/LLM]
-                                      │
-                                      ▼
-                              [Company Fetcher]
-                                      │
-                                      ▼
-                              [Business Logic]
-                                      │
-                                      ▼
-                              [Contact Updater]
-                                      │
-                                      ▼
-                              [Note Creator]
-```
-
-### Recruitment Automation Pipeline
-
-Pattern for AI-powered candidate analysis:
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    RECRUITMENT AUTOMATION PIPELINE                       │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  [Zoho Recruit Auth] ◄─── OAuth credentials (one-time setup)            │
-│        │                                                                │
-│        │ auth_config (shared to all Zoho components)                    │
-│        │                                                                │
-│        ├────────────────┬────────────────┬────────────────┐             │
-│        ▼                ▼                ▼                ▼             │
-│  [Job Openings]   [Candidates]    [Attachments]    [Notes]              │
-│        │                │                │                              │
-│        │ requirements   │ candidate_id   │ resume_text                  │
-│        ▼                ▼                ▼                              │
-│  ┌─────────────────────────────────────────────────────────┐            │
-│  │                    [LLM/AI Agent]                       │            │
-│  │  - Match candidates to job requirements                 │            │
-│  │  - Analyze CV/resume content                            │            │
-│  │  - Generate screening questions                         │            │
-│  │  - Score candidate fit                                  │            │
-│  └─────────────────────────────────────────────────────────┘            │
-│                          │                                              │
-│                          │ analysis_result                              │
-│                          ▼                                              │
-│                    [Recruit Notes]                                      │
-│                          │                                              │
-│                          │ add_note (AI summary)                        │
-│                          ▼                                              │
-│                    [Candidates]                                         │
-│                          │                                              │
-│                          │ update (status, score)                       │
-│                          ▼                                              │
-│                    [Flow Complete]                                      │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+[Webhook] → [Contact Info Extractor] → [HubSpot Contact Search]
+                                              │
+                                              ▼
+                                    [HubSpot Contact Fetcher]
+                                              │
+                    ┌─────────────────────────┴────────────────────────┐
+                    ▼                                                  ▼
+          [HubSpot Company Fetcher]                          [Pain Point Mapper]
+                    │                                                  │
+                    ▼                                                  │
+          [Savings Calculator]                                         │
+                    │                                                  │
+                    └──────────────────┬───────────────────────────────┘
+                                       ▼
+                            [Template Selector]
+                                       │
+                                       ▼
+                            [Jinja2 Renderer]
+                                       │
+                                       ▼
+                         [WeasyPrint PDF Generator]
+                                       │
+                                       ▼
+                         [HubSpot File Uploader]
+                                       │
+                                       ▼
+                         [HubSpot Note Creator]
 ```
 
 ---
 
-## Security Considerations
+## Security Notes
 
-### API Key Management
-
-All components use `SecretStrInput` for API keys and credentials, which:
-- Masks values in the UI
-- Encrypts at rest
-- Never logs credential values
-
-### Best Practices
-
-1. **Use environment variables** for credentials in production
-2. **Limit API key scopes** to minimum required permissions
-3. **Monitor rate limits** - HubSpot and Zoho have per-minute limits
-4. **Audit trail** - Use Note Creator components to log AI actions
-
----
-
-## Version History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2024-12 | Initial release with 17 components |
+- All API keys use `SecretStrInput` - values are masked in UI and encrypted at rest
+- No credentials are hardcoded in any component
+- Zoho tokens auto-refresh without exposing credentials
 
 ---
 
 *Documentation generated for CloudGeometry LangBuilder Custom Components*
-*Author: CloudGeometry Development Team*
