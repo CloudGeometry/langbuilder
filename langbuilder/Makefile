@@ -204,8 +204,6 @@ run_cli: install_frontend install_backend build_frontend ## run the CLI
 	@uv run langbuilder run \
 		--frontend-path $(path) \
 		--log-level $(log_level) \
-		--host $(host) \
-		--port $(port) \
 		$(if $(env),--env-file $(env),) \
 		$(if $(filter false,$(open_browser)),--no-open-browser)
 
@@ -248,8 +246,14 @@ backend: setup_env ## run the backend in development mode
 		echo "$(RED)Error: Virtual environment not found. Please run 'uv venv' first.$(NC)"; \
 		exit 1; \
 	fi
-	@echo "Ensuring PyTorch CPU is installed..."
-	@uv pip install --extra-index-url https://download.pytorch.org/whl/cpu torch==2.9.1+cpu torchvision==0.24.1+cpu
+	@echo "Ensuring PyTorch is installed..."
+	@if [ "$$(uname)" = "Darwin" ] || [ "$$(uname -s)" = "Darwin" ] || [[ "$$(uname -a)" == *"Darwin"* ]]; then \
+		echo "macOS detected, installing standard PyTorch..."; \
+		uv pip install torch==2.9.1 torchvision==0.24.1; \
+	else \
+		echo "Linux detected, installing CPU PyTorch..."; \
+		uv pip install --extra-index-url https://download.pytorch.org/whl/cpu torch==2.9.1+cpu torchvision==0.24.1+cpu; \
+	fi
 ifdef login
 	@echo "Running backend with autologin=$(login)";
 	LANGBUILDER_AUTO_LOGIN=$(login) uv run uvicorn \

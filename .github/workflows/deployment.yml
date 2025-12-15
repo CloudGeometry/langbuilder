@@ -1,0 +1,57 @@
+name: deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+
+jobs:
+  ssh-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy LangBuilder & OpenWebUI via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 54.221.139.4
+          username: ubuntu
+          key: ${{ secrets.DEV_SSH_KEY }}
+          script: |
+            set -e
+            export BRANCH="${{ github.event.inputs.branch || 'devops-1' }}"
+            export REPO_DIR="/home/ubuntu/cg_langbuilder/LangBuilder"
+            export OPENWEBUI_DIR="$REPO_DIR/openwebui"
+            export OPENWEBUI_BACKEND_DIR="$OPENWEBUI_DIR/backend"
+            export LANGBUILDER_DIR="$REPO_DIR/langbuilder"
+
+            cd "$REPO_DIR"
+            git stash
+            git fetch origin
+            git checkout "$BRANCH"
+            git pull origin "$BRANCH"
+
+            # Limpiar procesos previos
+            pkill -f "open-webui" || true
+            pkill -f "make run_cli" || true
+
+            cd "$OPENWEBUI_DIR"
+            npm install --legacy-peer-deps
+            npm run build
+
+            cd "$OPENWEBUI_BACKEND_DIR"
+            source ~/miniconda3/etc/profile.d/conda.sh
+            conda activate open-webui
+            nohup bash dev.sh > /tmp/openwebui_backend.log 2>&1 &
+            conda deactivate
+
+            cd "$LANGBUILDER_DIR"
+            nohup make run_cli > /tmp/langbuilder.log 2>&1 &
+
+            echo "Deploy completo en branch $BRANCH"
+            tail -n 20 /tmp/openwebui_backend.log || true
+            tail -n 20 /tmp/langbuilder.log || true
