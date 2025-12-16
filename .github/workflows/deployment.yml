@@ -23,7 +23,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
-            set -e
             export BRANCH="${{ github.event.inputs.branch }}"
             export REPO_DIR="/home/ubuntu/cg_langbuilder/LangBuilder"
             export OPENWEBUI_DIR="$REPO_DIR/openwebui"
