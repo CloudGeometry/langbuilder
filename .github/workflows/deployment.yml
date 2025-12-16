@@ -16,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy LangBuilder & OpenWebUI via SSH
+        timeout-minutes: 2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 54.221.139.4
@@ -23,7 +24,7 @@ jobs:
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
             set -e
-            export BRANCH="${{ github.event.inputs.branch || 'devops-1' }}"
+            export BRANCH="${{ github.event.inputs.branch }}"
             export REPO_DIR="/home/ubuntu/cg_langbuilder/LangBuilder"
             export OPENWEBUI_DIR="$REPO_DIR/openwebui"
             export OPENWEBUI_BACKEND_DIR="$OPENWEBUI_DIR/backend"
