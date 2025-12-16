@@ -205,7 +205,7 @@ run_cli: install_frontend install_backend build_frontend ## run the CLI
 		--frontend-path $(path) \
 		--log-level $(log_level) \
 		$(if $(env),--env-file $(env),) \
-		$(if $(filter false,$(open_browser)),--no-open-browser)
+		$(if $(filter false,$(open_browser)),--no-open-browser) & echo $$! > /tmp/langbuilder.pid
 
 run_cli_debug:
 	@echo 'Running the CLI in debug mode'
