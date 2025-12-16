@@ -1,3 +1,4 @@
+
 name: deployment
 
 on:
@@ -9,49 +10,81 @@ on:
         default: 'main'
 
 jobs:
-  ssh-test:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Deploy LangBuilder & OpenWebUI via SSH
-        timeout-minutes: 2
+        timeout-minutes: 10
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 54.221.139.4
+          command_timeout: 10m
           username: ubuntu
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
+            set -ex
+            source ~/.profile
             export BRANCH="${{ github.event.inputs.branch }}"
+            export BRANCH="devops-2"
             export REPO_DIR="/home/ubuntu/cg_langbuilder/LangBuilder"
             export OPENWEBUI_DIR="$REPO_DIR/openwebui"
             export OPENWEBUI_BACKEND_DIR="$OPENWEBUI_DIR/backend"
             export LANGBUILDER_DIR="$REPO_DIR/langbuilder"
+
+            echo "SHELL: $SHELL"
+            echo "USER: $(whoami)"
+            echo "HOME: $HOME"
+            echo "PATH: $PATH"
+            echo "Node version: $(node -v 2>/dev/null || echo 'node not found')"
+            echo "NPM version: $(npm -v 2>/dev/null || echo 'npm not found')"
+            echo "Current shell: $0"
+            env
 
             cd "$REPO_DIR"
             git stash
             git fetch origin
             git checkout "$BRANCH"
             git pull origin "$BRANCH"
+            
+            set +e
+            if [ -f /tmp/openwebui_backend.pid ]; then
+              kill $(cat /tmp/openwebui_backend.pid) || true
+              # rm /tmp/openwebui_backend.pid
+            fi
 
-            # Limpiar procesos previos
-            pkill -f "open-webui" || true
-            pkill -f "make run_cli" || true
+            if [ -f /tmp/langbuilder.pid ]; then
+              kill $(cat /tmp/langbuilder.pid) || true
+              # rm /tmp/langbuilder.pid
+            fi
+            set -e
+            
+
+            # Cargar nvm y usar Node >=20
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 22 || nvm install 22 
+            node -v
+            npm -v
 
             cd "$OPENWEBUI_DIR"
             npm install --legacy-peer-deps
             npm run build
 
             cd "$OPENWEBUI_BACKEND_DIR"
+            echo "Python version: $(python3 --version 2>&1)"
             source ~/miniconda3/etc/profile.d/conda.sh
             conda activate open-webui
             nohup bash dev.sh > /tmp/openwebui_backend.log 2>&1 &
             conda deactivate
 
             cd "$LANGBUILDER_DIR"
+            echo "Python version: $(python3 --version 2>&1)"
             nohup make run_cli > /tmp/langbuilder.log 2>&1 &
 
             echo "Deploy completo en branch $BRANCH"
             tail -n 20 /tmp/openwebui_backend.log || true
             tail -n 20 /tmp/langbuilder.log || true
+
