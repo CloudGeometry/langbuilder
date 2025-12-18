@@ -292,3 +292,9 @@ langbuilder/.cursor
 
 # Vite cache
 .vite/
+
+# NT1 folder
+nt1/
+
+# Antoine folder
+Antoine/
