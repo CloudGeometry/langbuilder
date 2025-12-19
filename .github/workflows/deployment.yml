@@ -29,7 +29,7 @@ jobs:
             source ~/.profile
             export BRANCH="${{ github.event.inputs.branch }}"
             export BASE_DIR="/home/ubuntu/cg_langbuilder/"
-            export REPO_DIR="$REPO_DIR/LangBuilder"
+            export REPO_DIR="$BASE_DIR/LangBuilder"
             export OPENWEBUI_DIR="$REPO_DIR/openwebui"
             export OPENWEBUI_BACKEND_DIR="$OPENWEBUI_DIR/backend"
             export LANGBUILDER_DIR="$REPO_DIR/langbuilder"
