@@ -1,4 +1,5 @@
 
+
 name: deployment
 
 on:
@@ -28,19 +29,16 @@ jobs:
             set -ex
             source ~/.profile
             export BRANCH="${{ github.event.inputs.branch }}"
-            export BASE_DIR="/home/ubuntu/cg_langbuilder/"
-            export REPO_DIR="$BASE_DIR/LangBuilder"
+            export REPO_DIR="/home/ubuntu/cg_langbuilder/LangBuilder"
             export OPENWEBUI_DIR="$REPO_DIR/openwebui"
             export OPENWEBUI_BACKEND_DIR="$OPENWEBUI_DIR/backend"
             export LANGBUILDER_DIR="$REPO_DIR/langbuilder"
 
-            cd "$BASE_DIR"
-            rm -rf LangBuilder/
-            git clone https://github.com/CloudGeometry/LangBuilder.git
             cd "$REPO_DIR"
+            git stash
             git fetch origin
             git checkout "$BRANCH"
-            git pull origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
             
             set +e
             if [ -f /tmp/openwebui_backend.pid ]; then
@@ -78,4 +76,3 @@ jobs:
             echo "Deploy completo en branch $BRANCH"
             tail -n 20 /tmp/openwebui_backend.log || true
             tail -n 20 /tmp/langbuilder.log || true
-
