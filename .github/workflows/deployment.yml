@@ -28,20 +28,10 @@ jobs:
             set -ex
             source ~/.profile
             export BRANCH="${{ github.event.inputs.branch }}"
-            export BRANCH="devops-2"
             export REPO_DIR="/home/ubuntu/cg_langbuilder/LangBuilder"
             export OPENWEBUI_DIR="$REPO_DIR/openwebui"
             export OPENWEBUI_BACKEND_DIR="$OPENWEBUI_DIR/backend"
             export LANGBUILDER_DIR="$REPO_DIR/langbuilder"
-
-            echo "SHELL: $SHELL"
-            echo "USER: $(whoami)"
-            echo "HOME: $HOME"
-            echo "PATH: $PATH"
-            echo "Node version: $(node -v 2>/dev/null || echo 'node not found')"
-            echo "NPM version: $(npm -v 2>/dev/null || echo 'npm not found')"
-            echo "Current shell: $0"
-            env
 
             cd "$REPO_DIR"
             git stash
@@ -74,14 +64,12 @@ jobs:
             npm run build
 
             cd "$OPENWEBUI_BACKEND_DIR"
-            echo "Python version: $(python3 --version 2>&1)"
             source ~/miniconda3/etc/profile.d/conda.sh
             conda activate open-webui
             nohup bash dev.sh > /tmp/openwebui_backend.log 2>&1 &
             conda deactivate
 
             cd "$LANGBUILDER_DIR"
-            echo "Python version: $(python3 --version 2>&1)"
             nohup make run_cli > /tmp/langbuilder.log 2>&1 &
 
             echo "Deploy completo en branch $BRANCH"
