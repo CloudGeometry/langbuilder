@@ -11,7 +11,11 @@ import time
 import uuid
 from datetime import datetime, timedelta
 
-from langbuilder.custom.custom_component.component import Component
+from langchain_core.tools import StructuredTool
+from pydantic import BaseModel, Field
+
+from langbuilder.base.langchain_utilities.model import LCToolComponent
+from langbuilder.field_typing import Tool
 from langbuilder.io import BoolInput, DataInput, DropdownInput, IntInput, MessageTextInput, Output, SecretStrInput, StrInput
 from langbuilder.schema.data import Data
 
@@ -25,7 +29,7 @@ AWS_REGIONS = [
 ]
 
 
-class DynamoDBSessionStoreComponent(Component):
+class DynamoDBSessionStoreComponent(LCToolComponent):
     """
     Store session data to AWS DynamoDB table.
 
@@ -49,6 +53,7 @@ class DynamoDBSessionStoreComponent(Component):
             display_name="Structured Data",
             info="Data from Structured Output component containing conversation metadata",
             required=True,
+            tool_mode=True,  # Agent can pass data when calling as tool
         ),
 
         # User message input
@@ -57,6 +62,7 @@ class DynamoDBSessionStoreComponent(Component):
             display_name="User Message",
             info="The user's message (from Chat Input)",
             required=True,
+            tool_mode=True,  # Agent can pass context when calling as tool
         ),
 
         # Session identification
@@ -81,7 +87,6 @@ class DynamoDBSessionStoreComponent(Component):
             name="aws_access_key_id",
             display_name="AWS Access Key ID",
             info="AWS Access Key ID (leave empty to use IAM role or environment credentials)",
-            value="AWS_ACCESS_KEY_ID",
             required=False,
         ),
 
@@ -89,8 +94,15 @@ class DynamoDBSessionStoreComponent(Component):
             name="aws_secret_access_key",
             display_name="AWS Secret Access Key",
             info="AWS Secret Access Key (leave empty to use IAM role or environment credentials)",
-            value="AWS_SECRET_ACCESS_KEY",
             required=False,
+        ),
+
+        SecretStrInput(
+            name="aws_session_token",
+            display_name="AWS Session Token",
+            info="AWS Session Token for temporary credentials (optional)",
+            required=False,
+            advanced=True,
         ),
 
         DropdownInput(
@@ -122,13 +134,7 @@ class DynamoDBSessionStoreComponent(Component):
         ),
     ]
 
-    outputs = [
-        Output(
-            name="stored_session",
-            display_name="Stored Session",
-            method="store_session",
-        ),
-    ]
+    # Uses default outputs from LCToolComponent base class
 
     def _ensure_table_exists(self, dynamodb, table):
         """
@@ -197,7 +203,7 @@ class DynamoDBSessionStoreComponent(Component):
                 # Re-raise other errors
                 raise
 
-    def store_session(self) -> Data:
+    def run_model(self) -> Data:
         """
         Store session data to DynamoDB.
 
@@ -232,13 +238,18 @@ class DynamoDBSessionStoreComponent(Component):
         try:
             # Use credentials if provided, otherwise use IAM role or environment
             if self.aws_access_key_id and self.aws_secret_access_key:
-                dynamodb = boto3.resource(
-                    "dynamodb",
-                    region_name=self.region_name,
-                    aws_access_key_id=self.aws_access_key_id,
-                    aws_secret_access_key=self.aws_secret_access_key,
-                )
-                self.log("Using provided AWS credentials")
+                client_kwargs = {
+                    "region_name": self.region_name,
+                    "aws_access_key_id": self.aws_access_key_id,
+                    "aws_secret_access_key": self.aws_secret_access_key,
+                }
+                # Add session token if provided (for temporary credentials)
+                if self.aws_session_token:
+                    client_kwargs["aws_session_token"] = self.aws_session_token
+                    self.log("Using temporary session credentials")
+                else:
+                    self.log("Using provided AWS credentials")
+                dynamodb = boto3.resource("dynamodb", **client_kwargs)
             else:
                 dynamodb = boto3.resource("dynamodb", region_name=self.region_name)
                 self.log("Using IAM role or environment credentials")
@@ -283,24 +294,23 @@ class DynamoDBSessionStoreComponent(Component):
             session_id = str(uuid.uuid4())
             self.log("WARNING: Auto-generated session_id - conversation continuity will be lost!")
 
-        # Prepare item to save - extract fields from structured output
+        # Prepare item to save - base required fields
         item = {
             "session_id": session_id,  # Primary key
             "timestamp": now.isoformat(),
             "ttl": ttl_timestamp,  # DynamoDB TTL attribute
             "user_message": str(self.user_message),
-            "ai_response": output_data.get("response", ""),
-            "phase": output_data.get("phase", ""),
-            "current_question": output_data.get("current_question", ""),
-            "questions_answered": output_data.get("questions_answered", []),
-            "answers": output_data.get("answers", {}),
-            "persona_hint": output_data.get("persona_hint", ""),
-            "email": output_data.get("email", ""),
         }
+
+        # Dynamically include ALL fields from structured data
+        # This allows storing any data shape (contact info, conversation state, etc.)
+        for key, value in output_data.items():
+            if key not in item:  # Don't overwrite mandatory fields
+                item[key] = value
 
         # Log operation
         self.log(f"Storing session {session_id} to table {self.table_name}")
-        self.log(f"Phase: {item['phase']}, Question: {item['current_question']}")
+        self.log(f"Fields: {list(output_data.keys())}")
         self.log(f"TTL: {ttl_timestamp} ({self.ttl_days} days from now)")
 
         # Put item to DynamoDB
@@ -325,3 +335,129 @@ class DynamoDBSessionStoreComponent(Component):
 
         # Return Data object with stored information
         return Data(data=item)
+
+    def build_tool(self) -> Tool:
+        """
+        Build a LangChain tool for storing session data to DynamoDB.
+
+        Returns:
+            StructuredTool: A tool that can be used by an Agent to store data.
+        """
+        # Define flexible schema for conversation state
+        class StoreConversationStateInput(BaseModel):
+            answers: str = Field(
+                default="",
+                description="JSON string of question answers, e.g. '{\"q1\": \"B\", \"q2\": \"A\"}'"
+            )
+            phase: str = Field(
+                default="discovery",
+                description="Current conversation phase: 'opening', 'discovery', 'closing', 'complete'"
+            )
+            current_question: str = Field(
+                default="",
+                description="Current question being asked, e.g. 'q3' or 'email'"
+            )
+            persona_hint: str = Field(
+                default="",
+                description="Detected persona type, e.g. 'Exec-leaning', 'Technical', 'General'"
+            )
+            blueprint: str = Field(
+                default="",
+                description="Generated blueprint or proposal content"
+            )
+            name: str = Field(
+                default="",
+                description="Contact's name (if collected)"
+            )
+            email: str = Field(
+                default="",
+                description="Contact's email (if collected)"
+            )
+            company: str = Field(
+                default="",
+                description="Contact's company (if collected)"
+            )
+
+        def _store_conversation_state(
+            answers: str = "",
+            phase: str = "discovery",
+            current_question: str = "",
+            persona_hint: str = "",
+            blueprint: str = "",
+            name: str = "",
+            email: str = "",
+            company: str = ""
+        ) -> str:
+            """Tool function that stores full conversation state."""
+            # Debug log
+            with open("/tmp/dynamodb_tool_called.txt", "a") as f:
+                f.write(f"TOOL CALLED: answers={answers[:50] if answers else None}, blueprint={len(blueprint)} chars, name={name}\n")
+
+            import json as json_module
+
+            # Parse answers if it's a JSON string
+            answers_dict = {}
+            if answers:
+                try:
+                    answers_dict = json_module.loads(answers)
+                except:
+                    answers_dict = {"raw": answers}
+
+            # Build the full state object
+            state_data = {
+                "phase": phase,
+                "current_question": current_question,
+                "persona_hint": persona_hint,
+                "answers": answers_dict,
+                "questions_answered": list(answers_dict.keys()) if answers_dict else [],
+            }
+
+            # Add optional fields if provided
+            if blueprint:
+                state_data["blueprint"] = blueprint
+            if name:
+                state_data["name"] = name
+            if email:
+                state_data["email"] = email
+            if company:
+                state_data["company"] = company
+
+            # Set the structured_data attribute
+            self.structured_data = Data(data=state_data)
+
+            # Set user_message
+            if not self.user_message:
+                self.user_message = f"Conversation state saved at phase: {phase}"
+
+            # Debug before run_model
+            with open("/tmp/dynamodb_tool_called.txt", "a") as f:
+                f.write(f"Calling run_model with structured_data keys: {list(state_data.keys())}\n")
+
+            # Call run_model to store
+            try:
+                result = self.run_model()
+                with open("/tmp/dynamodb_tool_called.txt", "a") as f:
+                    f.write(f"run_model SUCCESS: {result}\n")
+            except Exception as e:
+                with open("/tmp/dynamodb_tool_called.txt", "a") as f:
+                    f.write(f"run_model ERROR: {type(e).__name__}: {e}\n")
+                raise
+            if hasattr(result, 'data'):
+                session_id = result.data.get('session_id', 'unknown')
+                return f"Conversation state saved. Phase: {phase}, Questions: {list(answers_dict.keys())}, Session: {session_id}"
+            return f"Conversation state saved. Phase: {phase}"
+
+        tool = StructuredTool.from_function(
+            name="store_conversation_state",
+            description=(
+                "Store full conversation state to DynamoDB. Use this after each question is answered "
+                "to persist the conversation progress. Pass answers as a JSON string like "
+                "'{\"q1\": \"B\", \"q2\": \"A\"}'. Also use this to save the blueprint/proposal content."
+            ),
+            args_schema=StoreConversationStateInput,
+            func=_store_conversation_state,
+            return_direct=False,
+        )
+
+        self.status = "DynamoDB Conversation State Tool created"
+        return tool

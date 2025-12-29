@@ -11,8 +11,8 @@ from langbuilder.schema.dataframe import DataFrame
 class LCToolComponent(Component):
     trace_type = "tool"
     outputs = [
-        Output(name="api_run_model", display_name="Data", method="run_model"),
-        Output(name="api_build_tool", display_name="Tool", method="build_tool"),
+        Output(name="api_run_model", display_name="Data", method="run_model", group_outputs=True),
+        Output(name="api_build_tool", display_name="Tool", method="build_tool", group_outputs=True),
     ]
 
     def _validate_outputs(self) -> None:

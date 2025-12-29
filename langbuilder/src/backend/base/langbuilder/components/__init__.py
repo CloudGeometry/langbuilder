@@ -72,6 +72,7 @@ if TYPE_CHECKING:
         scrapegraph,
         searchapi,
         serpapi,
+        slack,
         tavily,
         tools,
         twelvelabs,
@@ -161,6 +162,7 @@ _dynamic_imports = {
     "wikipedia": "langbuilder.components.wikipedia",
     "youtube": "langbuilder.components.youtube",
     "scrapegraph": "langbuilder.components.scrapegraph",
+    "slack": "langbuilder.components.slack",
     "Notion": "langbuilder.components.Notion",
     "wolframalpha": "langbuilder.components.wolframalpha",
 }
@@ -230,6 +232,7 @@ __all__: list[str] = [
     "scrapegraph",
     "searchapi",
     "serpapi",
+    "slack",
     "tavily",
     "tools",
     "twelvelabs",

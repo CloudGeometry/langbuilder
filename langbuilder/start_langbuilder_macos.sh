@@ -14,12 +14,33 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Look for .env in parent directory (project root)
+# Look for .env in parent directory (project root) and local directory
 ENV_FILE="$SCRIPT_DIR/../.env"
+LOCAL_ENV="$SCRIPT_DIR/.env"
 
+# Load from root .env first
 if [ -f "$ENV_FILE" ]; then
     BACKEND_PORT=$(grep '^LANGBUILDER_BACKEND_PORT=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs || echo "8002")
     FRONTEND_PORT=$(grep '^VITE_PORT=' "$ENV_FILE" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs || echo "3000")
+fi
+
+# Load all environment variables from local .env (includes AWS credentials, auth, etc.)
+if [ -f "$LOCAL_ENV" ]; then
+    echo -e "${GREEN}Loading environment from $LOCAL_ENV...${NC}"
+    set -a  # automatically export all variables
+    source "$LOCAL_ENV"
+    set +a
+
+    # Show what was loaded
+    if [ -n "$LANGBUILDER_AUTO_LOGIN" ]; then
+        echo -e "${GREEN}Auth: AUTO_LOGIN=$LANGBUILDER_AUTO_LOGIN${NC}"
+    fi
+    if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+        echo -e "${GREEN}AWS: Credentials loaded (key: ${AWS_ACCESS_KEY_ID:0:10}...)${NC}"
+    fi
+    if [ -n "$AWS_SESSION_TOKEN" ]; then
+        echo -e "${GREEN}AWS: Session token loaded (${#AWS_SESSION_TOKEN} chars)${NC}"
+    fi
 fi
 
 # Default values if not set or empty
@@ -79,7 +100,8 @@ uv run uvicorn \
     --factory langbuilder.main:create_app \
     --host 0.0.0.0 \
     --port "$BACKEND_PORT" \
-    --loop asyncio &
+    --loop asyncio \
+    --log-level info &
 BACKEND_PID=$!
 
 sleep 3  # Give backend time to start

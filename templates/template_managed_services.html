@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Services Report - {{ company_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: white;
+            padding: 40px;
+            margin: -40px -40px 40px -40px;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .recipient-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .recipient-info h2 {
+            color: #1e3a5f;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .recipient-info .detail {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .recipient-info .label {
+            font-weight: 600;
+            width: 140px;
+            color: #666;
+        }
+        .recipient-info .value {
+            color: #333;
+        }
+        .executive-summary {
+            margin-bottom: 30px;
+        }
+        .executive-summary h2 {
+            color: #1e3a5f;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2d5a87;
+        }
+        .executive-summary .content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #444;
+        }
+        .savings-highlight {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .savings-highlight .amount {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .savings-highlight .label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        .cta {
+            background: #1e3a5f;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cloud Services Assessment Report</h1>
+            <div class="subtitle">Personalized for {{ company_name }}</div>
+        </div>
+
+        <div class="recipient-info">
+            <h2>Prepared For</h2>
+            <div class="detail">
+                <span class="label">Name:</span>
+                <span class="value">{{ lead_name }}</span>
+            </div>
+            <div class="detail">
+                <span class="label">Title:</span>
+                <span class="value">{{ role }}</span>
+            </div>
+            <div class="detail">
+                <span class="label">Company:</span>
+                <span class="value">{{ company_name }}</span>
+            </div>
+            <div class="detail">
+                <span class="label">Industry:</span>
+                <span class="value">{{ industry }}</span>
+            </div>
+            <div class="detail">
+                <span class="label">Current Cloud Spend:</span>
+                <span class="value">${{ annual_cloud_spend | default('N/A') }}</span>
+            </div>
+        </div>
+
+        <div class="executive-summary">
+            <h2>Executive Summary</h2>
+            <div class="content">
+                {{ ai_executive_summary }}
+            </div>
+        </div>
+
+        <div class="savings-highlight">
+            <div class="amount">{{ calculated_savings }}</div>
+            <div class="label">Projected Annual Savings</div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <p style="color: #666; margin-bottom: 15px;">Ready to transform your cloud infrastructure?</p>
+            <a href="#" class="cta">Schedule a Consultation</a>
+        </div>
+
+        <div class="footer">
+            <p>This report was generated automatically based on your submitted information.</p>
+            <p>Cloud Geometry | Transforming Cloud Infrastructure</p>
+        </div>
+    </div>
+</body>
+</html>

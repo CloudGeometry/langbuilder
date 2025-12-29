@@ -228,7 +228,9 @@ class WeasyPrintPDF(Component):
             return Data(data={
                 "success": True,
                 "pdf_base64": pdf_base64,
-                "pdf_bytes": pdf_bytes,  # For direct chaining to file upload
+                # NOTE: pdf_bytes removed - raw binary data causes UnicodeDecodeError
+                # when LangBuilder tries to serialize the Data object for logging.
+                # Use pdf_base64 instead (HubSpot File Uploader decodes it).
                 "filename": filename,
                 "size_bytes": size_bytes,
                 "size_kb": size_kb,

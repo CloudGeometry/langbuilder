@@ -103,6 +103,23 @@ else
     echo -e "  ${YELLOW}⚠${NC} LangBuilder .env missing VITE_PROXY_TARGET (will be created)"
 fi
 
+# Check 9b: Ensure LANGBUILDER_AUTO_LOGIN=False (login enabled by default)
+if [ -f "langbuilder/.env" ]; then
+    if grep -q "^LANGBUILDER_AUTO_LOGIN=False" "langbuilder/.env" 2>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} LangBuilder login mode enabled (AUTO_LOGIN=False)"
+    elif grep -q "^LANGBUILDER_AUTO_LOGIN" "langbuilder/.env" 2>/dev/null; then
+        # AUTO_LOGIN exists but is not False - update it
+        sed -i '' 's/^LANGBUILDER_AUTO_LOGIN=.*/LANGBUILDER_AUTO_LOGIN=False/' "langbuilder/.env"
+        echo -e "  ${GREEN}✓${NC} LangBuilder login mode enabled (updated AUTO_LOGIN=False)"
+    else
+        # AUTO_LOGIN doesn't exist - add it
+        echo "" >> "langbuilder/.env"
+        echo "# Authentication - Enable Login Mode" >> "langbuilder/.env"
+        echo "LANGBUILDER_AUTO_LOGIN=False" >> "langbuilder/.env"
+        echo -e "  ${GREEN}✓${NC} LangBuilder login mode enabled (added AUTO_LOGIN=False)"
+    fi
+fi
+
 # Check 10: OpenWebUI backend WEBUI_NAME fix
 if grep -q "^WEBUI_NAME" "openwebui/backend/open_webui/env.py" 2>/dev/null; then
     echo -e "  ${GREEN}✓${NC} OpenWebUI WEBUI_NAME export configured"

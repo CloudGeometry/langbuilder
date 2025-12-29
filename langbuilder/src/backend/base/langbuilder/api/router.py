@@ -21,6 +21,7 @@ from langbuilder.api.v1 import (
     variables_router,
 )
 from langbuilder.api.v1.voice_mode import router as voice_mode_router
+from langbuilder.api.v1.slack import router as slack_router
 from langbuilder.api.v2 import files_router as files_router_v2
 from langbuilder.api.v2 import mcp_router as mcp_router_v2
 
@@ -50,6 +51,7 @@ router_v1.include_router(starter_projects_router)
 router_v1.include_router(mcp_router)
 router_v1.include_router(voice_mode_router)
 router_v1.include_router(mcp_projects_router)
+router_v1.include_router(slack_router)
 
 router_v2.include_router(files_router_v2)
 router_v2.include_router(mcp_router_v2)

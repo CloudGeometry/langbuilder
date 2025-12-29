@@ -8,17 +8,20 @@ if TYPE_CHECKING:
     from langbuilder.components.cloudgeometry.jinja2_renderer import Jinja2Renderer
     from langbuilder.components.cloudgeometry.pain_point_mapper import PainPointMapper
     from langbuilder.components.cloudgeometry.contact_info_extractor import ContactInfoExtractorComponent
+    from langbuilder.components.cloudgeometry.context_unpacker import ContextUnpacker
 
 _dynamic_imports = {
     "Jinja2Renderer": "jinja2_renderer",
     "PainPointMapper": "pain_point_mapper",
     "ContactInfoExtractorComponent": "contact_info_extractor",
+    "ContextUnpacker": "context_unpacker",
 }
 
 __all__ = [
     "Jinja2Renderer",
     "PainPointMapper",
     "ContactInfoExtractorComponent",
+    "ContextUnpacker",
 ]
 
 
