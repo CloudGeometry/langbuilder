@@ -336,6 +336,14 @@ class DynamoDBSessionStoreComponent(LCToolComponent):
         # Return Data object with stored information
         return Data(data=item)
 
+    async def _get_tools(self):
+        """Override to return the named tool from build_tool() instead of generic outputs."""
+        tool = self.build_tool()
+        # Ensure tool has tags for framework compatibility
+        if tool and not tool.tags:
+            tool.tags = [tool.name]
+        return [tool] if tool else []
+
     def build_tool(self) -> Tool:
         """
         Build a LangChain tool for storing session data to DynamoDB.
@@ -457,6 +465,7 @@ class DynamoDBSessionStoreComponent(LCToolComponent):
             args_schema=StoreConversationStateInput,
             func=_store_conversation_state,
             return_direct=False,
+            tags=["store_conversation_state"],
         )
 
         self.status = "DynamoDB Conversation State Tool created"

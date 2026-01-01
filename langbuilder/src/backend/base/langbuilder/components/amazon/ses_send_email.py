@@ -494,6 +494,14 @@ class SESSendEmailComponent(LCToolComponent):
             self.status = "Failed: Unexpected error"
             raise ValueError(msg) from e
 
+    async def _get_tools(self):
+        """Override to return the named tool from build_tool() instead of generic outputs."""
+        tool = self.build_tool()
+        # Ensure tool has tags for framework compatibility
+        if tool and not tool.tags:
+            tool.tags = [tool.name]
+        return [tool] if tool else []
+
     def build_tool(self) -> Tool:
         """
         Build a LangChain tool for sending emails via SES.
@@ -559,6 +567,7 @@ class SESSendEmailComponent(LCToolComponent):
             args_schema=SendEmailInput,
             func=_send_email_tool,
             return_direct=False,
+            tags=["send_email"],
         )
 
         self.status = "SES Email Tool created"
