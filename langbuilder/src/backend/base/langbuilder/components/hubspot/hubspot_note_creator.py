@@ -9,7 +9,7 @@ Project: Carter's Agents - Email Copywriter
 """
 
 from langbuilder.custom import Component
-from langbuilder.io import StrInput, SecretStrInput, Output
+from langbuilder.io import HandleInput, StrInput, SecretStrInput, Output
 from langbuilder.schema import Data
 import httpx
 import time
@@ -35,23 +35,26 @@ class HubSpotNoteCreator(Component):
             required=True,
             info="HubSpot Private App API key with crm.objects.contacts.write scope"
         ),
-        StrInput(
+        HandleInput(
             name="contact_id",
             display_name="Contact ID",
+            input_types=["Data", "Message"],
             required=True,
-            info="HubSpot contact ID to associate the note with"
+            info="HubSpot contact ID to associate the note with (accepts Data with contact_id field)"
         ),
-        StrInput(
+        HandleInput(
             name="subject_line",
             display_name="Subject Line",
+            input_types=["Data", "Message"],
             required=True,
             info="Email draft subject line"
         ),
-        StrInput(
+        HandleInput(
             name="email_body",
             display_name="Email Body",
+            input_types=["Data", "Message"],
             required=True,
-            info="Email draft body content"
+            info="Email draft body content (e.g., LLM reasoning)"
         ),
         StrInput(
             name="source_cited",
@@ -70,6 +73,35 @@ class HubSpotNoteCreator(Component):
         ),
     ]
 
+    def _extract_value(self, input_data, field_name: str) -> str:
+        """Extract string value from Data, Message, or string input."""
+        if input_data is None:
+            return ""
+
+        # Handle list of Data objects (e.g., from ParseJSONData)
+        if isinstance(input_data, list) and len(input_data) > 0:
+            input_data = input_data[0]
+
+        # Handle Data object
+        if hasattr(input_data, "data"):
+            data = input_data.data
+            if isinstance(data, dict):
+                # Try the exact field name, then common alternatives
+                for key in [field_name, "contact_id", "id", "text", "reasoning", "value"]:
+                    if key in data:
+                        return str(data[key])
+                # Return the first value if nothing matches
+                if data:
+                    return str(next(iter(data.values())))
+            return str(data)
+
+        # Handle Message object
+        if hasattr(input_data, "text"):
+            return str(input_data.text)
+
+        # Handle string
+        return str(input_data)
+
     async def create_note(self) -> Data:
         """
         Create a NOTE engagement in HubSpot with the email draft.
@@ -79,13 +111,18 @@ class HubSpotNoteCreator(Component):
         """
         url = "https://api.hubapi.com/crm/v3/objects/notes"
 
+        # Extract values from potentially Data inputs
+        contact_id = self._extract_value(self.contact_id, "contact_id")
+        subject_line = self._extract_value(self.subject_line, "subject_line") or "ICP Validation Result"
+        email_body = self._extract_value(self.email_body, "reasoning") or self._extract_value(self.email_body, "email_body")
+
         # Build note body with clear formatting
         note_body = f"""🤖 AI-GENERATED EMAIL DRAFT
 
-SUBJECT: {self.subject_line}
+SUBJECT: {subject_line}
 
 BODY:
-{self.email_body}
+{email_body}
 """
 
         # Add source citation if provided
@@ -100,7 +137,7 @@ BODY:
             },
             "associations": [
                 {
-                    "to": {"id": self.contact_id},
+                    "to": {"id": contact_id},
                     "types": [
                         {
                             "associationCategory": "HUBSPOT_DEFINED",
@@ -125,7 +162,7 @@ BODY:
                     engagement_id = result.get("id")
 
                     # Build HubSpot contact URL
-                    hubspot_url = f"https://app.hubspot.com/contacts/contacts/{self.contact_id}"
+                    hubspot_url = f"https://app.hubspot.com/contacts/contacts/{contact_id}"
 
                     self.status = f"✅ Note created: {engagement_id}"
 
