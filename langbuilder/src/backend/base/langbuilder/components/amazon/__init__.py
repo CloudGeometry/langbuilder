@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from langbuilder.components.amazon.s3_bucket_uploader import S3BucketUploaderComponent
     from langbuilder.components.amazon.dynamodb_session_store import DynamoDBSessionStoreComponent
     from langbuilder.components.amazon.dynamodb_session_retrieve import DynamoDBSessionRetrieveComponent
+    from langbuilder.components.amazon.ses_send_email import SESSendEmailComponent
 
 _dynamic_imports = {
     "AmazonBedrockEmbeddingsComponent": "amazon_bedrock_embedding",
@@ -17,6 +18,7 @@ _dynamic_imports = {
     "S3BucketUploaderComponent": "s3_bucket_uploader",
     "DynamoDBSessionStoreComponent": "dynamodb_session_store",
     "DynamoDBSessionRetrieveComponent": "dynamodb_session_retrieve",
+    "SESSendEmailComponent": "ses_send_email",
 }
 
 __all__ = [
@@ -25,6 +27,7 @@ __all__ = [
     "S3BucketUploaderComponent",
     "DynamoDBSessionStoreComponent",
     "DynamoDBSessionRetrieveComponent",
+    "SESSendEmailComponent",
 ]
 
 
