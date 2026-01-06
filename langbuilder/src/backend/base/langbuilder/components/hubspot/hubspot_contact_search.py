@@ -59,6 +59,7 @@ class HubSpotContactSearchComponent(Component):
             display_name="Search Query",
             required=False,
             info="Name to search for (overrides parsed_data.contact_name if provided)",
+            tool_mode=True,  # Agent can set this when used as tool
         ),
         IntInput(
             name="limit",
@@ -99,18 +100,36 @@ class HubSpotContactSearchComponent(Component):
         if not self.hubspot_api_key:
             raise ToolException("HubSpot API key is required")
 
-        # Get query from search_query or from parsed_data.contact_name
+        # Get query from search_query or from parsed_data.contact_name/text
         query = ""
+        debug_info = []
+
         if self.search_query:
             query = str(self.search_query).strip()
+            debug_info.append(f"search_query='{query}'")
         elif self.parsed_data:
-            # Extract contact_name from parsed_data
-            data = self.parsed_data.data if hasattr(self.parsed_data, 'data') else self.parsed_data
+            # Extract search query from parsed_data
+            # Handle list inputs (from DataConditionalRouter which returns lists)
+            pd = self.parsed_data
+            debug_info.append(f"parsed_data type={type(pd).__name__}")
+            if isinstance(pd, list) and len(pd) > 0:
+                debug_info.append(f"list len={len(pd)}")
+                pd = pd[0]  # Take first item from list
+            data = pd.data if hasattr(pd, 'data') else pd
+            debug_info.append(f"data type={type(data).__name__}")
             if isinstance(data, dict):
-                query = data.get("contact_name", "") or ""
+                debug_info.append(f"dict keys={list(data.keys())[:5]}")
+                # Try search_query first (from Router), then contact_name, then text
+                query = data.get("search_query", "") or data.get("contact_name", "") or data.get("text", "") or ""
+                debug_info.append(f"query='{query}'")
+            else:
+                debug_info.append(f"data not dict: {str(data)[:50]}")
+        else:
+            debug_info.append("NO parsed_data and NO search_query")
 
         if not query:
-            raise ToolException("Search query is required (provide search_query or parsed_data with contact_name)")
+            debug_str = "; ".join(debug_info)
+            raise ToolException(f"Search query is required. DEBUG: {debug_str}")
 
         base_url = self.base_url or "https://api.hubapi.com"
         limit = self.limit or 5
