@@ -6,19 +6,22 @@ from langbuilder.components._importing import import_mod
 
 if TYPE_CHECKING:
     from langbuilder.components.cloudgeometry.jinja2_renderer import Jinja2Renderer
-    from langbuilder.components.cloudgeometry.pain_point_mapper import PainPointMapper
     from langbuilder.components.cloudgeometry.contact_info_extractor import ContactInfoExtractorComponent
+    from langbuilder.components.cloudgeometry.pinecone_search_tool import PineconeSearchToolComponent
+    from langbuilder.components.cloudgeometry.pinecone_store_tool import PineconeStoreToolComponent
 
 _dynamic_imports = {
     "Jinja2Renderer": "jinja2_renderer",
-    "PainPointMapper": "pain_point_mapper",
     "ContactInfoExtractorComponent": "contact_info_extractor",
+    "PineconeSearchToolComponent": "pinecone_search_tool",
+    "PineconeStoreToolComponent": "pinecone_store_tool",
 }
 
 __all__ = [
     "Jinja2Renderer",
-    "PainPointMapper",
     "ContactInfoExtractorComponent",
+    "PineconeSearchToolComponent",
+    "PineconeStoreToolComponent",
 ]
 
 
