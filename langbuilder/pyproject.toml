@@ -31,6 +31,7 @@ dependencies = [
     "faiss-cpu==1.9.0.post1",
     "types-cachetools>=5.5.0.20240820,<6.0.0",
     "pymongo==4.10.1",
+    "pymysql==1.1.1",
     "supabase>=2.6.0,<3.0.0",
     "certifi>=2023.11.17,<2025.0.0",
     'fastavro==1.9.7; python_version < "3.13"',
@@ -56,6 +57,7 @@ dependencies = [
     "zep-python==2.0.2",
     "youtube-transcript-api==0.6.3",
     "Markdown==3.7",
+    "weasyprint",
     "upstash-vector==0.6.0",
     "GitPython==3.1.43",
     "kubernetes==31.0.0",
@@ -357,4 +359,3 @@ ignore_missing_imports = true
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-

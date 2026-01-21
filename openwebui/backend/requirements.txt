@@ -38,6 +38,7 @@ asgiref==3.8.1
 # AI libraries
 tiktoken
 mcp==1.14.1
+composio
 
 openai
 anthropic
@@ -60,6 +61,7 @@ einops==0.8.1
 ftfy==6.2.3
 pypdf==6.0.0
 fpdf2==2.8.2
+weasyprint
 pymdown-extensions==10.14.2
 docx2txt==0.8
 python-pptx==1.0.2
@@ -109,7 +111,7 @@ pymongo
 psycopg2-binary==2.9.10
 pgvector==0.4.1
 
-PyMySQL==1.1.1
+pymysql==1.1.1
 boto3==1.40.5
 
 pymilvus==2.6.2

@@ -45,6 +45,7 @@ dependencies = [
 
     "tiktoken",
     "mcp==1.21.2",
+    "composio",
 
     "openai",
     "anthropic",
@@ -70,6 +71,7 @@ dependencies = [
     "chardet==5.2.0",
     "pypdf==6.0.0",
     "fpdf2==2.8.2",
+    "weasyprint",
     "pymdown-extensions==10.14.2",
     "docx2txt==0.8",
     "python-pptx==1.0.2",
