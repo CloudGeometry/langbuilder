@@ -1,0 +1,115 @@
+{
+  "profile_type": "foundation-context",
+  "generated_at": "2026-01-21T11:19:00Z",
+  "source": "core-metadata.json",
+
+  "project": {
+    "name": "langbuilder",
+    "version": "1.6.5",
+    "description": "A Python package with a built-in web application for building AI-powered workflows using LangChain",
+    "license": "MIT",
+    "repository": "https://github.com/CloudGeometry/langbuilder",
+    "requires_python": ">=3.10,<3.14"
+  },
+
+  "monorepo": {
+    "is_monorepo": true,
+    "tool": "uv-workspace",
+    "package_count": 3,
+    "packages": [
+      {
+        "name": "langbuilder",
+        "version": "1.6.5",
+        "path": "langbuilder/",
+        "type": "main"
+      },
+      {
+        "name": "langbuilder-base",
+        "version": "0.6.5",
+        "path": "langbuilder/src/backend/base/",
+        "type": "library"
+      },
+      {
+        "name": "open-webui",
+        "path": "openwebui/",
+        "type": "integration"
+      }
+    ]
+  },
+
+  "services": {
+    "backend": {
+      "name": "langbuilder-backend",
+      "type": "api",
+      "framework": "FastAPI",
+      "language": "Python",
+      "path": "langbuilder/src/backend/",
+      "port": 8002,
+      "api_versions": ["v1", "v2"]
+    },
+    "frontend": {
+      "name": "langbuilder-frontend",
+      "type": "web",
+      "framework": "React",
+      "language": "TypeScript",
+      "path": "langbuilder/src/frontend/",
+      "port": 5175,
+      "build_tool": "Vite"
+    }
+  },
+
+  "primary_technologies": {
+    "backend": {
+      "language": "Python",
+      "version": "3.10-3.14",
+      "framework": "FastAPI",
+      "orm": "SQLModel",
+      "ai_framework": "LangChain 0.3.x"
+    },
+    "frontend": {
+      "language": "TypeScript",
+      "version": "5.4.x",
+      "framework": "React 18.x",
+      "state": "Zustand",
+      "ui": "Radix UI + TailwindCSS"
+    },
+    "database": {
+      "default": "SQLite",
+      "production": "PostgreSQL",
+      "migrations": "Alembic"
+    }
+  },
+
+  "key_directories": {
+    "backend_base": "langbuilder/src/backend/base/langbuilder/",
+    "backend_api": "langbuilder/src/backend/base/langbuilder/api/",
+    "components": "langbuilder/src/backend/base/langbuilder/components/",
+    "frontend_src": "langbuilder/src/frontend/src/",
+    "tests": "langbuilder/src/backend/tests/"
+  },
+
+  "api_summary": {
+    "total_routers": 20,
+    "v1_routers": 18,
+    "v2_routers": 2,
+    "key_endpoints": [
+      "/api/v1/flows - Flow management",
+      "/api/v1/build - Chat/build operations",
+      "/api/v1/run - Endpoint execution",
+      "/api/v1/mcp - MCP protocol",
+      "/v1/chat/completions - OpenAI compatible"
+    ]
+  },
+
+  "database_summary": {
+    "model_count": 10,
+    "key_models": ["User", "Flow", "Folder", "ApiKey", "MessageTable"]
+  },
+
+  "component_summary": {
+    "categories": 12,
+    "llm_providers": 24,
+    "vector_stores": 19,
+    "integrations": 30
+  }
+}

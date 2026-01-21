@@ -1,0 +1,145 @@
+{
+  "project": {
+    "name": "langbuilder",
+    "version": "1.6.5",
+    "description": "A Python package with a built-in web application for building AI-powered workflows using LangChain",
+    "license": "MIT",
+    "repository": "https://github.com/CloudGeometry/langbuilder",
+    "documentation": "https://docs.langbuilder.org",
+    "requires_python": ">=3.10,<3.14"
+  },
+  "packages": [
+    {
+      "name": "langbuilder",
+      "version": "1.6.5",
+      "path": "langbuilder/",
+      "type": "main",
+      "entry_point": "langbuilder.langbuilder_launcher:main"
+    },
+    {
+      "name": "langbuilder-base",
+      "version": "0.6.5",
+      "path": "langbuilder/src/backend/base/",
+      "type": "library",
+      "entry_point": "langbuilder.__main__:main"
+    },
+    {
+      "name": "open-webui",
+      "path": "openwebui/",
+      "type": "integration",
+      "description": "ActionBridge - OpenWebUI integration"
+    }
+  ],
+  "services": {
+    "backend": {
+      "framework": "FastAPI",
+      "language": "Python",
+      "port_env": "BACKEND_PORT",
+      "default_port": 8002,
+      "api_versions": ["v1", "v2"]
+    },
+    "frontend": {
+      "framework": "React",
+      "language": "TypeScript",
+      "build_tool": "Vite",
+      "port_env": "FRONTEND_PORT",
+      "default_port": 5175
+    }
+  },
+  "api_endpoints": {
+    "v1": {
+      "prefix": "/api/v1",
+      "routers": [
+        {"name": "flows", "prefix": "/flows", "operations": ["CRUD", "upload", "download", "batch"]},
+        {"name": "chat", "prefix": "/build", "operations": ["build", "events", "cancel"]},
+        {"name": "users", "prefix": "/users", "operations": ["CRUD"]},
+        {"name": "api_key", "prefix": "/api_key", "operations": ["CRUD", "store"]},
+        {"name": "login", "prefix": "/login", "operations": ["login", "logout", "refresh", "auto_login"]},
+        {"name": "files", "prefix": "/files", "operations": ["upload", "download", "list", "delete"]},
+        {"name": "folders", "prefix": "/folders", "operations": ["CRUD", "download", "upload"]},
+        {"name": "projects", "prefix": "/projects", "operations": ["CRUD", "download", "upload"]},
+        {"name": "variables", "prefix": "/variables", "operations": ["CRUD"]},
+        {"name": "monitor", "prefix": "/monitor", "operations": ["builds", "messages", "transactions"]},
+        {"name": "endpoints", "prefix": "/run", "operations": ["run", "webhook", "custom_component"]},
+        {"name": "validate", "prefix": "/validate", "operations": ["validate"]},
+        {"name": "store", "prefix": "/store", "operations": ["store"]},
+        {"name": "publish", "prefix": "/publish", "operations": ["openwebui", "status"]},
+        {"name": "mcp", "prefix": "/mcp", "operations": ["sse", "post"]},
+        {"name": "mcp_projects", "prefix": "/mcp/projects", "operations": ["get", "install"]},
+        {"name": "starter_projects", "prefix": "/starter-projects", "operations": ["list"]},
+        {"name": "voice_mode", "prefix": "/voice", "operations": ["voice"]}
+      ]
+    },
+    "v2": {
+      "prefix": "/api/v2",
+      "routers": [
+        {"name": "files", "prefix": "/files", "operations": ["CRUD", "batch"]},
+        {"name": "mcp", "prefix": "/mcp", "operations": ["servers"]}
+      ]
+    },
+    "other": [
+      {"name": "health_check", "path": "/health"},
+      {"name": "openai_compat", "prefix": "/v1", "operations": ["models", "chat/completions"]}
+    ]
+  },
+  "database": {
+    "orm": "SQLModel",
+    "migrations": "Alembic",
+    "default_db": "SQLite",
+    "supported_dbs": ["SQLite", "PostgreSQL"],
+    "models": [
+      {"name": "User", "table": "user", "description": "User accounts"},
+      {"name": "Flow", "table": "flow", "description": "AI workflow definitions"},
+      {"name": "Folder", "table": "folder", "description": "Project/folder organization"},
+      {"name": "ApiKey", "table": "apikey", "description": "API key management"},
+      {"name": "Variable", "table": "variable", "description": "Encrypted variables/credentials"},
+      {"name": "MessageTable", "table": "message", "description": "Chat messages"},
+      {"name": "File", "table": "file", "description": "Uploaded files"},
+      {"name": "TransactionTable", "table": "transaction", "description": "Execution transactions"},
+      {"name": "VertexBuildTable", "table": "vertex_build", "description": "Node build results"},
+      {"name": "PublishRecord", "table": "publish_record", "description": "External publication tracking"}
+    ]
+  },
+  "components": {
+    "categories": [
+      "agents", "models", "embeddings", "vectorstores", "tools", "data",
+      "processing", "input_output", "logic", "helpers", "custom_component", "prototypes"
+    ],
+    "llm_providers": [
+      "openai", "anthropic", "google", "azure", "huggingface", "ollama",
+      "groq", "cohere", "mistral", "deepseek", "nvidia", "amazon",
+      "vertexai", "xai", "perplexity", "openrouter", "lmstudio",
+      "sambanova", "maritalk", "novita", "olivya", "notdiamond", "cloudflare", "ibm"
+    ],
+    "vectorstores": [
+      "AstraDB", "Cassandra", "Chroma", "Clickhouse", "Couchbase",
+      "Elasticsearch", "FAISS", "HCD", "Milvus", "MongoDB", "OpenSearch",
+      "PGVector", "Pinecone", "Qdrant", "Redis", "Supabase", "Upstash",
+      "Vectara", "Weaviate"
+    ],
+    "integrations": [
+      "apollo", "apify", "arxiv", "assemblyai", "confluence", "crewai",
+      "composio", "datastax", "docling", "duckduckgo", "exa", "firecrawl",
+      "git", "glean", "homeassistant", "hubspot", "jira", "langwatch",
+      "mem0", "needle", "scrapegraph", "searchapi", "serpapi", "tavily",
+      "twelvelabs", "unstructured", "wikipedia", "wolframalpha", "youtube", "zep"
+    ]
+  },
+  "dependencies": {
+    "core": [
+      "fastapi>=0.115.2", "uvicorn>=0.30.0", "langchain~=0.3.21",
+      "sqlmodel==0.0.22", "pydantic~=2.10.1", "alembic>=1.13.0"
+    ],
+    "ai_ml": [
+      "openai>=1.68.2", "anthropic", "langchain-openai>=0.2.12",
+      "langchain-anthropic==0.3.14", "langchain-google-genai==2.0.6",
+      "langchain-aws==0.2.33", "chromadb>=1.0.0", "mcp>=1.10.1"
+    ],
+    "frontend": [
+      "react ^18.3.1", "@xyflow/react ^12.3.6", "typescript ^5.4.5",
+      "vite ^5.4.19", "tailwindcss ^3.4.4", "zustand ^4.5.2"
+    ]
+  },
+  "extracted_at": "2026-01-21T12:00:00Z",
+  "extraction_tool": "CloudGeometry AIx SDLC"
+}
