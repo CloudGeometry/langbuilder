@@ -7,6 +7,7 @@ from langbuilder.components._importing import import_mod
 if TYPE_CHECKING:
     from langbuilder.components.amazon.amazon_bedrock_embedding import AmazonBedrockEmbeddingsComponent
     from langbuilder.components.amazon.amazon_bedrock_model import AmazonBedrockComponent
+    from langbuilder.components.amazon.aurora_mysql_retrieve import AuroraMySQLRetrieveComponent
     from langbuilder.components.amazon.aurora_rds_retrieve import AuroraRDSRetrieveComponent
     from langbuilder.components.amazon.aurora_rds_store import AuroraRDSStoreComponent
     from langbuilder.components.amazon.dynamodb_session_retrieve import DynamoDBSessionRetrieveComponent
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
 _dynamic_imports = {
     "AmazonBedrockEmbeddingsComponent": "amazon_bedrock_embedding",
     "AmazonBedrockComponent": "amazon_bedrock_model",
+    "AuroraMySQLRetrieveComponent": "aurora_mysql_retrieve",
     "AuroraRDSRetrieveComponent": "aurora_rds_retrieve",
     "AuroraRDSStoreComponent": "aurora_rds_store",
     "DynamoDBSessionRetrieveComponent": "dynamodb_session_retrieve",
@@ -28,6 +30,7 @@ _dynamic_imports = {
 __all__ = [
     "AmazonBedrockComponent",
     "AmazonBedrockEmbeddingsComponent",
+    "AuroraMySQLRetrieveComponent",
     "AuroraRDSRetrieveComponent",
     "AuroraRDSStoreComponent",
     "DynamoDBSessionRetrieveComponent",
