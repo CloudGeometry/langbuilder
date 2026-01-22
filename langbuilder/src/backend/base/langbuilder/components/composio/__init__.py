@@ -6,26 +6,32 @@ from langbuilder.components._importing import import_mod
 
 if TYPE_CHECKING:
     from .composio_api import ComposioAPIComponent
+    from .confluence_composio import ComposioConfluenceAPIComponent
     from .github_composio import ComposioGitHubAPIComponent
     from .gmail_composio import ComposioGmailAPIComponent
     from .googlecalendar_composio import ComposioGoogleCalendarAPIComponent
+    from .jira_composio import ComposioJiraAPIComponent
     from .outlook_composio import ComposioOutlookAPIComponent
     from .slack_composio import ComposioSlackAPIComponent
 
 _dynamic_imports = {
     "ComposioAPIComponent": "composio_api",
+    "ComposioConfluenceAPIComponent": "confluence_composio",
     "ComposioGitHubAPIComponent": "github_composio",
     "ComposioGmailAPIComponent": "gmail_composio",
     "ComposioGoogleCalendarAPIComponent": "googlecalendar_composio",
+    "ComposioJiraAPIComponent": "jira_composio",
     "ComposioOutlookAPIComponent": "outlook_composio",
     "ComposioSlackAPIComponent": "slack_composio",
 }
 
 __all__ = [
     "ComposioAPIComponent",
+    "ComposioConfluenceAPIComponent",
     "ComposioGitHubAPIComponent",
     "ComposioGmailAPIComponent",
     "ComposioGoogleCalendarAPIComponent",
+    "ComposioJiraAPIComponent",
     "ComposioOutlookAPIComponent",
     "ComposioSlackAPIComponent",
 ]

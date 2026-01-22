@@ -533,6 +533,11 @@ class ComposioSlackAPIComponent(ComposioBaseComponent):
 
     def execute_action(self):
         """Execute action and return response as Message."""
+        # Validate action is selected
+        if not self.action or self.action == "disabled" or (isinstance(self.action, list) and not self.action):
+            msg = "Please select an action before executing. Connect your Composio account and choose an action from the dropdown."
+            raise ValueError(msg)
+
         toolset = self._build_wrapper()
 
         try:
@@ -540,7 +545,7 @@ class ComposioSlackAPIComponent(ComposioBaseComponent):
             display_name = self.action[0]["name"] if isinstance(self.action, list) and self.action else self.action
             action_key = self._display_to_key_map.get(display_name)
             if not action_key:
-                msg = f"Invalid action: {display_name}"
+                msg = f"Invalid action: {display_name}. Please select a valid action from the dropdown."
                 raise ValueError(msg)
 
             enum_name = getattr(Action, action_key)

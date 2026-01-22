@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from langbuilder.components.processing.data_operations import DataOperationsComponent
     from langbuilder.components.processing.data_to_dataframe import DataToDataFrameComponent
     from langbuilder.components.processing.dataframe_operations import DataFrameOperationsComponent
+    from langbuilder.components.processing.dynamic_system_prompt import DynamicSystemPromptComponent
     from langbuilder.components.processing.extract_key import ExtractDataKeyComponent
     from langbuilder.components.processing.filter_data import FilterDataComponent
     from langbuilder.components.processing.filter_data_values import DataFilterComponent
@@ -45,6 +46,7 @@ _dynamic_imports = {
     "DataOperationsComponent": "data_operations",
     "DataToDataFrameComponent": "data_to_dataframe",
     "DataFrameOperationsComponent": "dataframe_operations",
+    "DynamicSystemPromptComponent": "dynamic_system_prompt",
     "ExtractDataKeyComponent": "extract_key",
     "FilterDataComponent": "filter_data",
     "DataFilterComponent": "filter_data_values",
@@ -76,6 +78,7 @@ __all__ = [
     "DataFrameOperationsComponent",
     "DataOperationsComponent",
     "DataToDataFrameComponent",
+    "DynamicSystemPromptComponent",
     "ExtractDataKeyComponent",
     "FilterDataComponent",
     "JSONCleaner",
