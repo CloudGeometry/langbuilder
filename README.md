@@ -7,9 +7,14 @@ Before you begin, ensure you have the following installed on your system:
 ### Required Software
 
 1. **Python 3.11 or 3.12 (recommended)**
-   - Download from [python.org](https://www.python.org/downloads/)
-   - Verify installation: `python --version`
-   - **Important**: Python 3.13+ is too new and has compatibility issues. Use Python 3.12 for production deployments.
+   - **macOS (recommended):**
+     ```bash
+     brew install python@3.11
+     ```
+   - **Other platforms:** Download from [python.org](https://www.python.org/downloads/)
+   - Verify installation: `python3.11 --version`
+   - **Important**: Python 3.13+ is too new and has compatibility issues. Use Python 3.11 or 3.12 for production deployments.
+   - **Note**: On macOS, the system Python is typically 3.9.x. You must explicitly use `python3.11` for all commands.
 
 2. **Node.js 20.19.0+ or 22.x.x LTS (recommended) and npm 6.0.0+**
    - Download from [nodejs.org](https://nodejs.org/)
@@ -31,11 +36,19 @@ Before you begin, ensure you have the following installed on your system:
      ```
 
 3. **uv (Python package manager)**
-   - Install via pipx:
+   - **Recommended (curl installer):**
+     ```bash
+     curl -LsSf https://astral.sh/uv/install.sh | sh
+     ```
+     **Important:** After installation, add to your PATH:
+     ```bash
+     export PATH="$HOME/.local/bin:$PATH"
+     ```
+     Add this line to your `~/.bashrc` or `~/.zshrc` for persistence.
+   - **Alternative (via pipx):**
      ```bash
      pipx install uv
      ```
-   - Or follow instructions at [uv documentation](https://github.com/astral-sh/uv)
    - Verify installation: `uv --version`
 
 4. **Git Bash or WSL** (Windows users)
@@ -54,30 +67,54 @@ Before you begin, ensure you have the following installed on your system:
 ## Installation
 
 
+### Step 1: Configure Environment Variables
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env file with your favorite editor
+nano .env  # or code .env, vim .env, etc.
+```
+
+**Important:** After copying `.env.example`, you must fix the port configuration. Change these lines:
+```bash
+# Change FROM:
+OPEN_WEBUI_PORT=${BACKEND_PORT}
+PORT=${BACKEND_PORT}
+
+# Change TO:
+OPEN_WEBUI_PORT=8767
+PORT=8767
+```
+
+The `${BACKEND_PORT}` variable reference syntax doesn't work with the startup scripts.
+
+---
+
 ### Step 2: Set Up Python Virtual Environment for OpenWebUI
 
 ```bash
 # Navigate to openwebui directory
 cd openwebui
 
-# Create virtual environment
-python -m venv .venv
+# Create virtual environment (MUST use python3.11 explicitly)
+python3.11 -m venv .venv
 
-# Activate virtual environment
-# On Windows (Git Bash):
-source .venv/Scripts/activate
-# On Linux/Mac:
-# source .venv/bin/activate
-
-# Install backend dependencies
-pip install -r backend/requirements.txt
+# Install backend dependencies (no need to activate venv)
+.venv/bin/pip install -r backend/requirements.txt
 
 # Install frontend dependencies
 # Note: Use --legacy-peer-deps due to @tiptap version conflicts
 npm install --legacy-peer-deps
 
+# Install y-protocols (required for TipTap collaborative editor)
+npm install y-protocols --legacy-peer-deps
+
 cd ..
 ```
+
+**Note:** On macOS, do not use `python` or `python3` as these may point to older system versions. Always use `python3.11` explicitly.
 
 ### Step 3: Install LangBuilder Dependencies
 
@@ -92,24 +129,23 @@ make install_backend
 
 # Install frontend dependencies
 make install_frontend
+```
 
+**Critical:** Create the LangBuilder frontend environment file. Without this, the frontend cannot connect to the backend:
+
+```bash
+# Create langbuilder/.env file (REQUIRED)
+cat > .env << 'EOF'
+VITE_PROXY_TARGET=http://localhost:8002
+VITE_PORT=3000
+EOF
+```
+
+```bash
 cd ..
 ```
 
 **Note:** The `uv venv` command creates a Python virtual environment in the `.venv` directory. This is required before running any backend commands.
-
----
-
-## Environment Configuration
-
-### Step 1: Configure Environment Variables
-
-The project includes a `.env` file in the root directory. Review and update it with your API keys and configuration:
-
-```bash
-# Edit .env file with your favorite editor
-nano .env  # or code .env, vim .env, etc.
-```
 
 ---
 
@@ -119,11 +155,18 @@ The project consists of 2 main stacks that need to be started:
 
 ### Option A: Start Everything with One Command (Easiest)
 
+**macOS:**
+```bash
+./start_all_macos.sh
+```
+
+**Linux/Windows (Git Bash):**
 ```bash
 ./start_all.sh
 ```
 
 **What it does:**
+- Runs pre-flight checks to verify dependencies
 - Starts OpenWebUI_CG (backend + frontend)
 - Waits for initialization
 - Starts LangBuilder_CG (backend + frontend)
@@ -271,4 +314,39 @@ After verifying all services are running correctly, you need to connect OpenWebU
 
 ## Troubleshooting
 
-For detailed troubleshooting steps, see [INSTALL_STEPS.md](INSTALL_STEPS.md#troubleshooting).
+### Common Issues
+
+**"Invalid value for '--port': '${BACKEND_PORT}' is not a valid integer"**
+- The `.env` file contains variable references that aren't evaluated
+- Fix: Change `OPEN_WEBUI_PORT=${BACKEND_PORT}` to `OPEN_WEBUI_PORT=8767` in your `.env` file
+
+**"Could not resolve y-protocols/awareness"**
+- Missing npm dependency for the TipTap editor
+- Fix: `cd openwebui && npm install y-protocols --legacy-peer-deps`
+
+**Vite proxy returns 500 errors / ECONNREFUSED**
+- The `langbuilder/.env` file is missing or misconfigured
+- Fix: Create `langbuilder/.env` with:
+  ```
+  VITE_PROXY_TARGET=http://localhost:8002
+  VITE_PORT=3000
+  ```
+
+**Python version errors / module not found**
+- Using wrong Python version (system Python is often 3.9.x)
+- Fix: Always use `python3.11` explicitly, not `python` or `python3`
+
+**uv: command not found**
+- uv is not in PATH after installation
+- Fix: Add `export PATH="$HOME/.local/bin:$PATH"` to your shell profile
+
+**Port already in use**
+```bash
+# Kill processes on specific ports (macOS/Linux)
+lsof -ti:8002 | xargs kill -9  # LangBuilder backend
+lsof -ti:3000 | xargs kill -9  # LangBuilder frontend
+lsof -ti:8767 | xargs kill -9  # OpenWebUI backend
+lsof -ti:5175 | xargs kill -9  # OpenWebUI frontend
+```
+
+For more detailed troubleshooting steps, see [INSTALL_STEPS.md](INSTALL_STEPS.md#troubleshooting) and [MACOS_SETUP_ISSUES.md](MACOS_SETUP_ISSUES.md).

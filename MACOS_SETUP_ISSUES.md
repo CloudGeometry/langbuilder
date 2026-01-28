@@ -28,11 +28,13 @@ cp .env.example .env
 # Edit .env with your API keys, OAuth credentials, etc.
 ```
 
-## Step 2: Fix OpenWebUI Code Bug
+## Step 2: Fix OpenWebUI Code Bug (ALREADY FIXED)
 
-**Problem:** The backend won't start because `WEBUI_NAME` is imported but never defined.
+> **Note:** This bug has been fixed in the current codebase. The line already exists at `openwebui/backend/open_webui/env.py` line 114. You can skip this step.
 
-**Fix:** Edit `openwebui/backend/open_webui/env.py` and add this line around line 114 (near `WEBUI_FAVICON_URL`):
+~~**Problem:** The backend won't start because `WEBUI_NAME` is imported but never defined.~~
+
+~~**Fix:** Edit `openwebui/backend/open_webui/env.py` and add this line around line 114 (near `WEBUI_FAVICON_URL`):~~
 
 ```python
 WEBUI_NAME = os.environ.get("WEBUI_NAME", "Open WebUI")
@@ -128,9 +130,10 @@ The script will run pre-flight checks and tell you if anything is missing.
 | What | Why | Fix |
 |------|-----|-----|
 | Use Python 3.11 | Python 3.13 breaks OpenWebUI dependencies | `brew install python@3.11` |
-| Add WEBUI_NAME to env.py | Code bug - variable imported but not defined | Add line to `openwebui/backend/open_webui/env.py` |
+| ~~Add WEBUI_NAME to env.py~~ | ~~Code bug - variable imported but not defined~~ | **ALREADY FIXED in codebase** |
 | Install y-protocols | Missing npm dependency for TipTap editor | `npm install y-protocols --legacy-peer-deps` |
 | Create langbuilder/.env | Vite reads wrong .env file, proxy fails | Create file with `VITE_PROXY_TARGET` |
+| Fix .env port references | `${BACKEND_PORT}` not evaluated by scripts | Change to literal `8767` |
 | Use macOS startup scripts | Original scripts have Windows paths | Use `start_all_macos.sh` |
 
 ---
@@ -138,7 +141,19 @@ The script will run pre-flight checks and tell you if anything is missing.
 ## Troubleshooting
 
 ### "Cannot import WEBUI_NAME"
-You forgot Step 2. Add the WEBUI_NAME line to env.py.
+This bug has been fixed in the codebase. If you still see this error, ensure you have the latest code.
+
+### "Invalid value for '--port': '${BACKEND_PORT}' is not a valid integer"
+The `.env` file uses variable references that the startup scripts cannot evaluate:
+```bash
+# Change this in .env:
+OPEN_WEBUI_PORT=${BACKEND_PORT}  # Wrong - won't work
+PORT=${BACKEND_PORT}              # Wrong - won't work
+
+# To this:
+OPEN_WEBUI_PORT=8767              # Correct
+PORT=8767                         # Correct
+```
 
 ### "Could not resolve y-protocols/awareness"
 You forgot to install y-protocols:
